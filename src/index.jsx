@@ -23,7 +23,7 @@ render(() => (
   <Router >
     <Routes> 
     <Route path="/" component={App} />
-    <Route path="/home" component={HomePage} />
+    {/* <Route path="/home" component={HomePage} /> */}
     <Route path="/contact" component={Contact} />
     <Route path="/tictactoe" component={TicTacToe} />
     </Routes>

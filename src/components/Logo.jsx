@@ -1,4 +1,5 @@
 import { onMount, onCleanup } from "solid-js";
+import MyLogo from "/src/assets/my-logo1.png"
 
 function Logo() {
     let logo;
@@ -14,7 +15,7 @@ function Logo() {
 
     return (
         <div id="logo" ref={el => (logo = el)}>
-            <img id="img-logo" src="./src/assets/my-logo1.png" alt="logo"  />
+            <img id="img-logo" src={MyLogo} alt="logo"  />
         </div>
     );
 }

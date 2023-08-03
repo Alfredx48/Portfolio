@@ -30,6 +30,11 @@
   justify-content: center;
 }
 
+#hidden {
+  color: rgb(38, 47, 67);
+  cursor: pointer;
+  text-decoration: none;
+}
 
 #img-logo{
   /* max-width: 100%; */

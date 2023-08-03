@@ -1,7 +1,7 @@
 import { createSignal, createEffect, onCleanup } from 'solid-js';
 import "../css/Blob.css"
 function Blob() {
-  const [blob, setBlob] = createSignal(); // use a Solid signal as a ref
+const [blob, setBlob] = createSignal(); // use a Solid signal as a ref
 
   createEffect(() => {
     const handlePointerMove = event => {
