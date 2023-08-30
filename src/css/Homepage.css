@@ -1,22 +1,26 @@
-#app {
-  overflow: hidden;
-  /* display: flex; */
-  align-items: center;
-  justify-content: center;
-}
+
 
 #homepage {
-  /* width: 80%; */
-  gap: 2%;
   display: flex;
   flex-direction: row;
-  margin: 20%;
-  margin-top: 3%;
+  height: 100%;
+  overflow: hidden;
+  width: 65%;
+  margin: auto;
+  margin-top: 5%;
 }
 
+#left {
+  flex: 1;
+}
+
+#right {
+  flex: 1;
+}
+
+
 #about {
-  width: 70%;
-  /* margin-right:  5%; */
+  margin-bottom: 20%;
 }
 
 #logo {
@@ -25,9 +29,6 @@
   position: absolute;
   animation: 1.5s zoom-out cubic-bezier(.5, -.55, .3, 1) forwards;
   transform-origin: top left;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 #hidden {
@@ -37,15 +38,13 @@
 }
 
 #img-logo{
-  /* max-width: 100%; */
   min-height: 100%;
-  
   width: 1000px;
   border-radius: 20%;
 }
 
 #footer {
-  width: 60%;
+  width: 50%;
   display: flex;
   justify-content: center;
   gap: 5%;
@@ -57,8 +56,7 @@
 }
 
 #header-div {
-  width: 80%;
-
+  margin-bottom: 65%;
 }
 
 #header-div h1{
@@ -66,15 +64,20 @@
   font-size: 3rem;
   line-height: 1;
   letter-spacing: -.025em;
-  font-weight: bold;
-  
+  font-weight: bold; 
+}
+
+#project-img {
+  width: 200px;
+}
+
+#project-card {
+  margin-bottom: 10%;
 }
 
 #header-div p{
   width: 80%;
 }
-
-
 
 
 @keyframes zoom-out {
