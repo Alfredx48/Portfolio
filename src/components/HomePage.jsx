@@ -12,7 +12,7 @@ function HomePage() {
 
   createEffect(() => {
     const handleScroll = e => {
-      e.preventDefault();
+      // e.preventDefault();
       const rightElement = rightDiv();
       if (rightElement) {
         rightElement.scrollTop += e.deltaY;

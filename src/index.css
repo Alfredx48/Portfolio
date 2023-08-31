@@ -34,6 +34,16 @@ body::-webkit-scrollbar{
 	display: none;
 }
 
+
+
+@media ( max-width: 1024px) {
+	body {
+		overflow: auto;
+	}
+	body::-webkit-scrollbar{
+		display: none;
+	}
+}
   
 
 

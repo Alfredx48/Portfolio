@@ -3,13 +3,9 @@ import ProjectData from "../data/projectData"
 
 function Projects() {
 
-    const projects =
-        ProjectData.map((project, index) => (
-            <>
-                <ProjectCard key={index} project={project} />
-            </>
-        )
-        )
+    const projects = ProjectData.map(({ image, name, video ,description }, index) => (
+        <ProjectCard key={index} image={image} name={name} video={video} description={description}/>
+    ));
 
     return (
         <div id="projects">
