@@ -1,10 +1,12 @@
-import { createSignal, createEffect, onCleanup } from "solid-js"
+import { createSignal, createEffect, onCleanup, lazy } from "solid-js"
 import { A } from "@solidjs/router"
 import "../css/Homepage.css"
 import Header from "./Header"
 import About from "./About"
 import Socials from "./Socials"
 import Projects from "./Projects"
+const Logo = lazy(() => import("./Logo"))
+
 
 function HomePage() {
 
@@ -12,7 +14,6 @@ function HomePage() {
 
   createEffect(() => {
     const handleScroll = e => {
-      // e.preventDefault();
       const rightElement = rightDiv();
       if (rightElement) {
         rightElement.scrollTop += e.deltaY;
@@ -27,6 +28,7 @@ function HomePage() {
   })
   return (
     <>
+      <Logo />
       <div id="homepage">
         <div id="left" >
           <Header />
@@ -37,13 +39,13 @@ function HomePage() {
           <Projects />
         </div>
       </div>
-
-      {/* <A
+      <A
           id="hidden"
           href="/tictactoe"
           activeClass="underlined"
-        >TicTacToe</A> */}
+        >TicTacToe</A>
     </>
+
   )
 }
 

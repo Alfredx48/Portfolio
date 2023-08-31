@@ -1,0 +1,31 @@
+/* styles.css */
+.get-in-touch {
+	background-color: #502955;
+	color: #ffffff;
+	padding: 12px 24px;
+	font-size: 16px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+	transition: all 0.3s ease 0s;
+}
+
+.get-in-touch:hover {
+	background-color: rgb(79, 209, 197, 0.5);
+	color: #ffffff;
+	box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.get-in-touch:active {
+	background-color: rgb(79, 209, 197, 0.5);
+
+	box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 1024px) {
+	#get-in-touch {
+		padding-bottom: 5%;
+	}
+}

@@ -15,6 +15,7 @@
     "vite-plugin-solid": "^2.7.0"
   },
   "dependencies": {
+    "@emailjs/browser": "^3.11.0",
     "@motionone/solid": "^10.16.2",
     "@solidjs/router": "^0.8.2",
     "solid-js": "^1.7.6"

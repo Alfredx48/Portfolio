@@ -7,10 +7,11 @@ import { lazy } from 'solid-js';
 import Blob from './components/Blob';
 import TicTacToe from './components/TicTacToe';
 
-document.addEventListener("DOMContentLoaded", function() {
-  window.scrollTo(0, 0);
-});
+// document.addEventListener("DOMContentLoaded", function() {
+//   window.scrollTo(0, 0);
+// });
 
+window.onload = function () { window.scrollTo(0, 0); }
 window.onunload = function () { window.scrollTo(0, 0); }
 
 const root = document.getElementById('root');
