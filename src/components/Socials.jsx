@@ -1,6 +1,6 @@
 import GitHub from "/src/assets/github.png"
 import LinkedIn from "/src/assets/linkedin.png"
-import Resume from "/src/assets/resume.png"
+import Resume from "/src/assets/resumewhite.png"
 import ResumePdf from "/src/assets/Resume.pdf"
 function Socials() {
   return (

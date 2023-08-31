@@ -3,7 +3,7 @@
 	flex-direction: row;
 	height: 100vh;
 	overflow: hidden;
-	width: 65%;
+	width: 70%;
 	margin: auto;
 	margin-top: 5%;
 }
@@ -46,10 +46,10 @@
 }
 
 #footer {
-	width: 50%;
+	width: 65%;
 	display: flex;
 	justify-content: center;
-	gap: 20%;
+	gap: 10%;
 }
 
 #social-img {
@@ -58,7 +58,7 @@
 }
 
 #header-div {
-	margin-bottom: 65%;
+	margin-bottom: 90%;
 }
 
 #header-div h1 {
@@ -73,6 +73,12 @@
 	width: 200px;
 }
 
+#project-img-h1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5%;
+}
 #project-card {
 	margin-bottom: 10%;
 }
