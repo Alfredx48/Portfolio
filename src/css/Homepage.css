@@ -154,13 +154,13 @@ a {
 
   #header-div p {
     width: 90%;
+    margin-bottom: 10%;
   }
+  
 
   #left {
     flex: 1;
-    display: flex;
-    align-content: center;
-    margin: auto;
+    align-items: center;
   }
 
   #right {
