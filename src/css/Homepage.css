@@ -1,98 +1,97 @@
-
-
 #homepage {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  overflow: hidden;
-  width: 65%;
-  margin: auto;
-  margin-top: 5%;
+	display: flex;
+	flex-direction: row;
+	height: 100vh;
+	overflow: hidden;
+	width: 65%;
+	margin: auto;
+	margin-top: 5%;
 }
 
 #left {
-  flex: 1;
+	flex: 1;
 }
 
 #right {
-  flex: 1;
+	flex: 1;
+	height: 100vh; /* Set the height */
+	overflow-y: auto;
 }
 
+#right::-webkit-scrollbar {
+	display: none;
+}
 
 #about {
-  margin-bottom: 20%;
+	margin-bottom: 20%;
 }
 
 #logo {
-  margin-top: 5px;
-  max-height: 100%;
-  position: absolute;
-  animation: 1.5s zoom-out cubic-bezier(.5, -.55, .3, 1) forwards;
-  transform-origin: top left;
+	position: absolute;
+	animation: 1.5s zoom-out cubic-bezier(0.5, -0.55, 0.3, 1) forwards;
+	transform-origin: top left;
 }
 
 #hidden {
-  color: rgb(38, 47, 67);
-  cursor: pointer;
-  text-decoration: none;
+	color: rgb(38, 47, 67);
+	cursor: pointer;
+	text-decoration: none;
 }
 
-#img-logo{
-  min-height: 100%;
-  width: 1000px;
-  border-radius: 20%;
+#img-logo {
+	min-height: 100%;
+	width: 1000px;
+	border-radius: 20%;
 }
 
 #footer {
-  width: 50%;
-  display: flex;
-  justify-content: center;
-  gap: 5%;
+	width: 50%;
+	display: flex;
+	justify-content: center;
+	gap: 20%;
 }
 
 #social-img {
-  width: 50px;
-  height: 50px;
+	width: 50px;
+	height: 50px;
 }
 
 #header-div {
-  margin-bottom: 65%;
+	margin-bottom: 65%;
 }
 
-#header-div h1{
-  cursor: pointer;
-  font-size: 3rem;
-  line-height: 1;
-  letter-spacing: -.025em;
-  font-weight: bold; 
+#header-div h1 {
+	cursor: pointer;
+	font-size: 3rem;
+	line-height: 1;
+	letter-spacing: -0.025em;
+	font-weight: bold;
 }
 
 #project-img {
-  width: 200px;
+	width: 200px;
 }
 
 #project-card {
-  margin-bottom: 10%;
+	margin-bottom: 10%;
 }
 
-#header-div p{
-  width: 80%;
+#header-div p {
+	width: 80%;
 }
-
 
 @keyframes zoom-out {
-  0% {
-      transform: scale(1) translate(-50%, -50%);
-      top: 50%;
-      left: 50%;
-      width: 500px;
-  }
+	0% {
+		transform: scale(1) translate(-50%, -50%);
+		top: 50%;
+		left: 50%;
+		width: 500px;
+	}
 
-  100% {
-      transform: scale(0.1);
-      top: 1%;
-      left: 1%;
-      width: 1000px;
-
-  }
+	100% {
+		transform: scale(0.1);
+		top: 1%;
+		left: 1%;
+		width: 1000px;
+	}
 }

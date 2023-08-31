@@ -14,19 +14,26 @@
 }
 
 body {
-	--tw-bg-opacity: 1;
+	/* --tw-bg-opacity: 1; */
 	background-color: rgb(38, 47, 67);
 	/* background-color: rgb(15 23 42); */
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	z-index: 0;
+	/* z-index: 0; */
 	color: rgb(226 232 240);
 	/* overflow: hidden; */
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
+  scroll-behavior: auto;
 }
+
+body::-webkit-scrollbar{
+	display: none;
+}
+
+  
 
 

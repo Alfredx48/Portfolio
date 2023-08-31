@@ -1,37 +1,26 @@
 import { createSignal, createEffect, onCleanup } from 'solid-js';
 import "../css/Blob.css"
-
 function Blob() {
-  const [blob, setBlob] = createSignal(); // use a Solid signal as a ref
-  let animationFrameId;  // Declare a variable to hold the requestAnimationFrame ID
+const [blob, setBlob] = createSignal(); // use a Solid signal as a ref
 
-  const handlePointerMove = event => {
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId); // Cancel any existing animation frames
-    }
-  
-    animationFrameId = requestAnimationFrame(() => { // Schedule a new animation frame
-      const clientX = event.clientX + window.scrollX;
-      const clientY = event.clientY + window.scrollY;
+  createEffect(() => {
+    const handlePointerMove = event => {
+      const { clientX, clientY } = event;
 
-      const blobElement = blob();
+      // modify the CSS directly
+      const blobElement = blob(); // get the current value of the blob signal
       if (blobElement) {
         blobElement.style.left = `${clientX}px`;
         blobElement.style.top = `${clientY}px`;
       }
-    });
-  };
+    };
 
-  createEffect(() => {
     // add event listener on effect creation
     window.addEventListener('pointermove', handlePointerMove);
 
     // remove event listener on effect cleanup
     onCleanup(() => {
       window.removeEventListener('pointermove', handlePointerMove);
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId); // Cancel any remaining animation frames
-      }
     });
   });
 
