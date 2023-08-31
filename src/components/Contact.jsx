@@ -44,7 +44,7 @@ function Contact() {
           <input required class="contact-input" type="email" name="user_email" />
           <label class="contact-label">Message</label>
           <textarea required class="contact-input" name="message"></textarea>
-          <input class="submit" type="submit" value="Send" />
+          <button class="submit" type="submit" value="Send"> Send </button>
           <A id="home" href="/" activeClass="underlined">
             <svg width="50" height="50" viewBox="0 0 50 50">
               <g transform="rotate(180, 25, 25)">

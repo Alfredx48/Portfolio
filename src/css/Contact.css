@@ -41,6 +41,7 @@
 }
 
 .submit {
+	font-size: large;
 	align-self: center;
 	background-color: rgb(38, 47, 67);
 	border: none;
@@ -51,7 +52,7 @@
 	width: 70%;
 	border-radius: 4px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	margin-bottom: 2%;
+	margin-bottom: 5%;
 }
 
 .submit:hover {
