@@ -14,8 +14,9 @@
 
 #right {
 	flex: 1;
-	height: 100vh; /* Set the height */
+	height: 90%; /* Set the height */
 	overflow-y: auto;
+  padding-bottom: 5%;
 }
 
 #right::-webkit-scrollbar {
