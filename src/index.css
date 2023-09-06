@@ -19,7 +19,6 @@ body {
 	/* background-color: rgb(15 23 42); */
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	z-index: 0;
 	color: rgb(226 232 240);
 
   margin: 0;
@@ -39,8 +38,10 @@ body::-webkit-scrollbar{
 @media ( max-width: 1024px) {
 	body {
 		overflow: auto;
+		align-items: normal;
 	}
-	body::-webkit-scrollbar{
+
+	#hidden-message-container {
 		display: none;
 	}
 }

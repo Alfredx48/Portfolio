@@ -81,9 +81,11 @@ a {
   transform: scale(1.2); 
 }
 
-/* #header-div {
-	margin-bottom: 90%;
-} */
+#header-div {
+  display: flex;
+  flex-direction: column;
+  gap: 20%;
+}
 
 #header-div h1 {
 	cursor: pointer;
@@ -112,6 +114,8 @@ a {
   
   background-color: rgb(128, 128, 128, .2);
   border-radius: 0.25rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
   
 }
 

@@ -5,7 +5,6 @@ import Header from "./Header"
 import About from "./About"
 import Socials from "./Socials"
 import Projects from "./Projects"
-const Logo = lazy(() => import("./Logo"))
 
 
 function HomePage() {
@@ -28,7 +27,6 @@ function HomePage() {
   })
   return (
     <>
-      <Logo />
       <div id="homepage">
         <div id="left" >
           <Header />
@@ -36,14 +34,17 @@ function HomePage() {
         </div>
         <div id="right" ref={setRightDiv}>
           <About />
+        <A
+          id="hidden"
+          href="/memory-game"
+        >Don't Click</A>
           <Projects />
+          <A
+            id="hidden"
+            href="/tictactoe"
+          >TicTacToe</A>
         </div>
       </div>
-      <A
-          id="hidden"
-          href="/tictactoe"
-          activeClass="underlined"
-        >TicTacToe</A>
     </>
 
   )

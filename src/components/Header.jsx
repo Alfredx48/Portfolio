@@ -1,4 +1,4 @@
-import GetInTouchButton from "./GetInTouchButton GetInTouchButton"
+import GetInTouchButton from "./GetInTouchButton"
 
 function Header() {
   return (

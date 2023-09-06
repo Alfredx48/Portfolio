@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@emailjs/browser':
+    specifier: ^3.11.0
+    version: 3.11.0
   '@motionone/solid':
     specifier: ^10.16.2
     version: 10.16.2(solid-js@1.7.6)
@@ -17,7 +20,7 @@ dependencies:
 
 devDependencies:
   solid-devtools:
-    specifier: ^0.24.5
+    specifier: ^0.24.7
     version: 0.24.7(@solidjs/meta@0.28.6)(@solidjs/router@0.8.3)(solid-js@1.7.6)(vite@4.4.9)
   vite:
     specifier: ^4.4.9
@@ -1532,6 +1535,11 @@ packages:
       '@babel/helper-validator-identifier': 7.22.5
       to-fast-properties: 2.0.0
     dev: true
+
+  /@emailjs/browser@3.11.0:
+    resolution: {integrity: sha512-RkY3FKZ3fPdK++OeF46mRTFpmmQWCHUVHZH209P3NE4D5sg2Atg7S2wa3gw5062Gl4clt4Wn5SyC4WhlVZC5pA==}
+    engines: {node: '>=14.0.0'}
+    dev: false
 
   /@esbuild/android-arm64@0.17.19:
     resolution: {integrity: sha512-KBMWvEZooR7+kzY0BtbTQn0OAYY7CsiydT63pVEaPtVYF0hXbUaOyZog37DKxK7NF3XacBJOpYT4adIJh+avxA==}

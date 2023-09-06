@@ -1,4 +1,4 @@
-import Mardinis from "/src/assets/mardinis.png";
+import Mardinis from "../../src/assets/mardinis.png";
 import Cuisine from "/src/assets/cuisine-creations.jpeg";
 import SemiGames from "/src/assets/semi-addicting-games.png";
 

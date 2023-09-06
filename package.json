@@ -10,7 +10,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "solid-devtools": "^0.24.5",
+    "solid-devtools": "^0.24.7",
     "vite": "^4.4.9",
     "vite-plugin-solid": "^2.7.0"
   },

@@ -1,5 +1,6 @@
 import { createSignal } from 'solid-js';
 import "../css/tictactoe.css"
+import FoundMessageContainer from './FoundMessageContainer';
 
 function TicTacToe() {
     const [cells, setCells] = createSignal(Array(9).fill(''));
@@ -60,6 +61,7 @@ function TicTacToe() {
 
     return (
         <div class='container'>
+            <FoundMessageContainer />
             <h1>TicTacToe</h1>
             <h2>Turn: {turn()}</h2>
             <table>

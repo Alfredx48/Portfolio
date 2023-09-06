@@ -1,6 +1,5 @@
 import emailjs from "@emailjs/browser";
 import "../css/Contact.css";
-import Logo from "./Logo";
 import { A } from "@solidjs/router";
 
 function Contact() {
@@ -28,9 +27,6 @@ function Contact() {
   }
   return (
     <>
-      <A id="hidden"
-        href="/"
-        activeClass="underlined"> <Logo /> </A>
       <div>
         <h1 class="header">Send Me an Email</h1>
         <form
