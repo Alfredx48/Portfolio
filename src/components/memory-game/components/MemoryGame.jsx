@@ -1,4 +1,4 @@
-import { createSignal, createEffect } from "solid-js";
+import { createSignal, createEffect, For } from "solid-js";
 import Card from "./Card";
 import Header from "./Header";
 import shuffle from "../utilities/shuffle";
@@ -43,7 +43,7 @@ function MemoryGame() {
                 setCards((prevCards) => {
                     return prevCards.map((card) => {
                         //  debugger
-                        if (card.image === pickOne().image) {
+                        if (card.image === pickOne().image && !card.matched) {
                             return { ...card, matched: true }
                         } else {
                             return card;
@@ -64,6 +64,7 @@ function MemoryGame() {
         };
     })
 
+
     createEffect(() => {
         const checkWin = cards().filter((card) => !card.matched);
         if (cards().length && checkWin.length < 1) {
@@ -77,7 +78,9 @@ function MemoryGame() {
         }
     })
 
-    //  createEffect(() => { 
+
+
+    //  createEffect(() => {
     //     let timer;
     // 		if (timeLeft <= 0) {
     // 			handleNewGame();
@@ -93,6 +96,7 @@ function MemoryGame() {
     //  })
 
 
+
     return (
         <>
             <Header
@@ -103,8 +107,8 @@ function MemoryGame() {
             />
 
             <div class="grid">
-                {cards().map((card) => {
-                    return (
+                <For each={cards()}>
+                    {(card) => (
                         <Card
                             key={card.id}
                             card={card}
@@ -112,11 +116,9 @@ function MemoryGame() {
                             onClick={() => handleClick(card)}
                             pickOne={pickOne}
                             pickTwo={pickTwo}
-                            matched={card.matched}
                         />
-
-                    );
-                })}
+                    )}
+                </For>
             </div>
         </>
     );

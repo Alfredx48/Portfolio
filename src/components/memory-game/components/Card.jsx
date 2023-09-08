@@ -1,9 +1,9 @@
 import cardBack from "../../../assets/memory-game-images/computer from the 90s.png"
 import { createMemo } from "solid-js";
 
-function Card({ image, onClick, card, pickOne, pickTwo, matched}) {
+function Card({ image, onClick, card, pickOne, pickTwo}) {
     const isSelected = createMemo(() => {
-        return card === pickOne() || card === pickTwo() || matched;
+        return card === pickOne() || card === pickTwo() || card.matched;
     });
     
     return (

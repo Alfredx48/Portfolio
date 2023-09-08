@@ -30,7 +30,11 @@
   cursor: pointer;
   border-radius: 1rem;
   margin-right: 1%;
-  margin-top: 1%;
+}
+
+svg {
+  margin-top: 5%;
+  
 }
 
 #show-message-tab:hover{
@@ -43,7 +47,6 @@
 }
 
 #x {
-  
   width: min-content;
   margin-left: 85%;
   margin-top: 5%;
@@ -60,3 +63,14 @@
       opacity: 1;
   }
 }
+
+
+@media(max-width: 1024px) {
+  #hidden-message-container {
+    display: none !important;
+  }
+
+  #show-message-tab {
+    display: none !important;
+  }
+} 

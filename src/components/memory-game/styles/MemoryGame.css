@@ -16,7 +16,7 @@ warning in VSCode,change the css.lint.unknownAtRules setting to ignore. */
   --shadow: 1px 1px 13px #03030390;
 
   --card-width: 150px;
-  --card-width-mobile: 20vw;
+  --card-width-mobile: 25vw;
   --card-enter: enter 600ms ease;
 }
 
@@ -125,24 +125,25 @@ button {
 
 /* ========= Mobile ===================== */
 @media screen and (max-width: 1024px) {
-  body{
-    display: block;
-  }
   header {
     left: 0;
     bottom: 0;
-    margin: auto;
     position: fixed;
     border-radius: 0;
+    z-index: 9999;
   }
 
   .grid {
-    margin: 3rem auto 3rem auto;
-  grid-template-columns: repeat(4, auto);
-
+    /* margin: 3rem auto 3rem auto; */
+    margin-bottom: 4.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    
   }
-
+  
   .card {
     width: var(--card-width-mobile);
   }
+
+
 }
