@@ -14,7 +14,7 @@ function GetInTouchButton() {
   };
 
   return (
-    <A id="hidden"
+    <A 
       href="/contact"
       activeClass="underlined">
       <div class="get-in-touch" onClick={handleClick}>
