@@ -12,6 +12,10 @@ function HomePage() {
   const [rightDiv, setRightDiv] = createSignal();
 
   createEffect(() => {
+    document.title = "Alfred Shaheen"
+  })
+
+  createEffect(() => {
     const handleScroll = e => {
       const rightElement = rightDiv();
       if (rightElement) {
