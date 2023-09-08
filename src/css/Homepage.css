@@ -55,6 +55,10 @@ a {
 	color: rgb(38, 47, 67);
 	cursor: pointer;
 	text-decoration: none;
+  display: flex;
+  margin: auto;
+  margin-bottom: 1%;
+  width: fit-content;
 }
 
 #img-logo {
@@ -155,6 +159,16 @@ a {
 	}
 }
 
+@keyframes blink {
+  0%, 40.43% { color: rgb(38, 47, 67); }
+  61.44%, 100% { color: #4FD1C5; }
+}
+
+@keyframes fade {
+  0%, 10% { opacity: 0; }
+  50% { opacity: 1; }
+  90%, 100% { opacity: 0; }
+}
 @media (max-width: 1024px) {
   #logo{
     display: none;
@@ -185,4 +199,10 @@ a {
     height: 100%;  
     overflow-y: auto;  
   }
+
+  #hidden {
+    animation: 
+      blink 7s linear infinite, 
+      fade 7s linear infinite;
+}
 }

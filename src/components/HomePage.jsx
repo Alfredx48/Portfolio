@@ -37,7 +37,7 @@ function HomePage() {
         <A
           id="hidden"
           href="/memory-game"
-        >Don't Click</A>
+        >CLICK ME!!!</A>
           <Projects />
           <A
             id="hidden"
