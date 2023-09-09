@@ -2,7 +2,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  background-color: rgba(0, 0, 0);
+  background-color: rgba(0, 0, 0, .9);
   color: white;
   z-index: 9999;
   padding: 20px;
@@ -29,6 +29,7 @@
   padding: 10px;
   cursor: pointer;
   border-radius: 1rem;
+  margin-top: 1%;
   margin-right: 1%;
 }
 

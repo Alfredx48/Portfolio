@@ -39,7 +39,7 @@ function FoundMessageContainer() {
                     setIsVisible(true);
                     setShowTab(false);
                 }}>
-                <span>Show Message</span>
+                <span>Show</span>
             </div>
         </>
     );
