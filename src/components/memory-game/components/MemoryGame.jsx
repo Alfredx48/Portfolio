@@ -119,6 +119,7 @@ function MemoryGame() {
                         />
                     )}
                 </For>
+                <div class="bottom"> </div>
             </div>
         </>
     );

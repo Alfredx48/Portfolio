@@ -137,13 +137,17 @@ button {
 	}
 
 	.grid {
-		/* margin: 3rem auto 3rem auto; */
-		margin-bottom: 4.5rem;
+		margin: auto 1rem auto;
+    margin-top: 5%;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
 	}
+
+  .bottom {
+    margin-top: 4.5rem;
+  }
 
 	.card {
 		width: var(--card-width-mobile);
+		margin: auto;
 	}
 }
