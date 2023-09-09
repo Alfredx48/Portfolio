@@ -14,28 +14,30 @@
 }
 
 body {
-	/* --tw-bg-opacity: 1; */
 	background-color: rgb(38, 47, 67);
 	/* background-color: rgb(15 23 42); */
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: rgb(226 232 240);
-
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  height: 100vh;
-  overflow: hidden;
-  scroll-behavior: auto;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	height: 100vh;
+	overflow: hidden;
+	scroll-behavior: auto;
+	scrollbar-width: none;
+	-ms-overflow-style: none;
 }
 
-body::-webkit-scrollbar{
-	display: none;
+::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	display: none; /* Optional to hide entirely */
 }
 
+/* For Firefox */
 
-
-@media ( max-width: 1024px) {
+@media (max-width: 1024px) {
 	body {
 		overflow: auto;
 		align-items: normal;
@@ -45,6 +47,3 @@ body::-webkit-scrollbar{
 		display: none;
 	}
 }
-  
-
-

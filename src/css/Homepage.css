@@ -34,6 +34,8 @@ a {
 	height: 95%; /* Set the height */
 	overflow-y: auto;
   padding-bottom: 5%;
+  scrollbar-width: none;
+	-ms-overflow-style: none;
 }
 
 #right::-webkit-scrollbar {
