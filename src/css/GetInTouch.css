@@ -9,7 +9,9 @@
 	text-decoration: none;
 	display: inline-block;
 	transition: all 0.3s ease 0s;
-	margin-top: 5%;
+	margin: auto;
+	margin-top: 20%;
+	margin-bottom: 10%;
 	max-width: fit-content;
 }
 

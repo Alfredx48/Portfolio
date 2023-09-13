@@ -34,14 +34,14 @@ function HomePage() {
       <div id="homepage">
         <div id="left" >
           <Header />
+          <A
+            id="hidden"
+            href="/memory-game"
+          >CLICK ME!!!</A>
           <Socials />
         </div>
         <div id="right" ref={setRightDiv}>
           <About />
-        <A
-          id="hidden"
-          href="/memory-game"
-        >CLICK ME!!!</A>
           <Projects />
           <A
             id="hidden"

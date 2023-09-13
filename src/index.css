@@ -1,7 +1,7 @@
 @supports (font-variation-settings: normal) {
 	:root {
 		line-height: 1.5;
-		-webkit-text-size-adjust: 100%;
+		/* -webkit-text-size-adjust: 100%; */
 		-moz-tab-size: 4;
 		-o-tab-size: 4;
 		tab-size: 4;
@@ -14,8 +14,8 @@
 }
 
 body {
-	background-color: rgb(38, 47, 67);
 	/* background-color: rgb(15 23 42); */
+	background-color: rgb(38, 47, 67);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: rgb(226 232 240);
@@ -25,17 +25,9 @@ body {
 	height: 100vh;
 	overflow: hidden;
 	scroll-behavior: auto;
-	scrollbar-width: none;
-	-ms-overflow-style: none;
 }
 
-::-webkit-scrollbar {
-	width: 0;
-	height: 0;
-	display: none; /* Optional to hide entirely */
-}
 
-/* For Firefox */
 
 @media (max-width: 1024px) {
 	body {

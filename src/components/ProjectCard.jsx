@@ -1,5 +1,9 @@
 
-function ProjectCard({ image, name, description, video }) {
+function ProjectCard({ image, name, description, video, tech }) {
+
+    const techUsed = tech.map(t => (
+        <li id="tech">{ t }</li>
+    ))
 
     return (
         <a rel="noopener noreferrer nofollow"
@@ -10,6 +14,9 @@ function ProjectCard({ image, name, description, video }) {
                     <img src={image} alt={name} id="project-img" />
                 </div>
                 <p>{description}</p>
+                <ul id="tech-list">
+                    {techUsed}
+                </ul>
             </div>
         </a>
     );
