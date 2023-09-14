@@ -1,5 +1,5 @@
-import { Router, Route, Routes, A } from "@solidjs/router";
-import { lazy } from 'solid-js';
+import { Route, Routes, A } from "@solidjs/router";
+import { lazy, onCleanup ,createEffect } from 'solid-js';
 import TicTacToe from './components/TicTacToe';
 import "./App.css"
 import HomePage from './components/HomePage';
@@ -12,6 +12,18 @@ const Logo = lazy(() => import("./components/Logo"))
 
 function App() {
 
+
+  createEffect(() => {
+    const handleRouteChange = () => {
+      gtag('event', 'page_view', { page_path: window.location.pathname });
+    };
+
+    window.addEventListener("popstate", handleRouteChange);
+    
+    onCleanup(() => {
+      window.removeEventListener("popstate", handleRouteChange);
+    });
+  });
   return (
     <>
     <A id="hidden"
