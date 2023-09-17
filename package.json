@@ -12,6 +12,7 @@
   "devDependencies": {
     "solid-devtools": "^0.24.7",
     "vite": "^4.4.9",
+    "vite-plugin-copy": "^0.1.6",
     "vite-plugin-solid": "^2.7.0"
   },
   "dependencies": {
