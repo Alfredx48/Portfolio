@@ -46,6 +46,7 @@ a {
 }
 
 #logo {
+	z-index: 99999;
 	position: absolute;
 	animation: 1.5s zoom-out cubic-bezier(0.5, -0.55, 0.3, 1) forwards;
 	transform-origin: top left;
