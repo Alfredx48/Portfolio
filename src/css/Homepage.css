@@ -1,12 +1,12 @@
 a {
-	color: inherit; 
-	text-decoration: none; 
-	background: none; 
-	cursor: pointer; 
-	font-size: inherit; 
-	border: none; 
+	color: inherit;
+	text-decoration: none;
+	background: none;
+	cursor: pointer;
+	font-size: inherit;
+	border: none;
 	padding: 0;
-	margin: 0; 
+	margin: 0;
 	width: fit-content;
 }
 
@@ -59,7 +59,7 @@ a {
 	display: flex;
 	margin: 0 auto;
 	margin-bottom: 5%;
-	width: 50%
+	width: 50%;
 }
 
 #img-logo {
@@ -144,7 +144,7 @@ a {
 	margin-top: 0.5rem;
 	display: flex;
 	flex-wrap: wrap;
-  gap: .5rem;
+	gap: 0.5rem;
 }
 
 #tech {
@@ -154,12 +154,12 @@ a {
 	background-color: rgba(56, 178, 172, 0.2);
 	padding-left: 0.75rem;
 	padding-right: 0.75rem;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  line-height: 1.25rem;
-  color: #3bafac;
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+	line-height: 1.25rem;
+	color: #3bafac;
 }
 @keyframes zoom-out {
 	0% {
@@ -214,13 +214,13 @@ a {
 
 	#about {
 		margin-bottom: 10%;
-    margin-left: .5rem;
-    margin-right: .5rem;
+		margin-left: 0.5rem;
+		margin-right: 0.5rem;
 	}
 	#header-div {
 		margin-bottom: 10%;
-    margin-left: .5rem;
-    margin-right: .5rem;
+		margin-left: 0.5rem;
+		margin-right: 0.5rem;
 	}
 	#footer {
 		width: 90%;
