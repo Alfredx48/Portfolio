@@ -6,6 +6,7 @@
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "cp _redirects dist/",
     "serve": "vite preview"
   },
   "license": "MIT",
