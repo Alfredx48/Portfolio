@@ -10,6 +10,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "rollup-plugin-copy": "^3.5.0",
     "solid-devtools": "^0.24.7",
     "vite": "^4.4.9",
     "vite-plugin-copy": "^0.1.6",
