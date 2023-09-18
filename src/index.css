@@ -27,10 +27,6 @@ body {
 	scroll-behavior: auto;
 }
 
-#root {
-	display: flex;
-	flex-direction: column;
-}
 
 @media (max-width: 1024px) {
 	body {
