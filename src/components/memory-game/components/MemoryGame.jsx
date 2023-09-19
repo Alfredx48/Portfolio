@@ -74,10 +74,9 @@ function MemoryGame() {
             setTimeLeft((prev) => prev);
             setCards(shuffle())
             setBadge()
-            // alert("You Win")
+            alert("You Win")
         }
     })
-
 
 
     //  createEffect(() => {

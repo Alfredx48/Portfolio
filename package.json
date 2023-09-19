@@ -12,7 +12,7 @@
   "license": "MIT",
   "devDependencies": {
     "rollup-plugin-copy": "^3.5.0",
-    "solid-devtools": "^0.24.7",
+    "solid-devtools": "^0.27.7",
     "vite": "^4.4.9",
     "vite-plugin-copy": "^0.1.6",
     "vite-plugin-solid": "^2.7.0"
@@ -21,6 +21,7 @@
     "@emailjs/browser": "^3.11.0",
     "@motionone/solid": "^10.16.2",
     "@solidjs/router": "^0.8.2",
-    "solid-js": "^1.7.6"
+    "solid-js": "^1.7.6",
+    "toastify-js": "^1.12.0"
   }
 }

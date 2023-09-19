@@ -38,6 +38,10 @@ function HomePage() {
             id="hidden"
             href="/memory-game"
           >CLICK ME!!!</A>
+          <A
+            id="hidden"
+            href="/rpc-sim"
+          >CLICK ME!!!</A>
           <Socials />
         </div>
         <div id="right" ref={setRightDiv}>
