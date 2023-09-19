@@ -37,11 +37,11 @@ function HomePage() {
           <A
             id="hidden"
             href="/memory-game"
-          >CLICK ME!!!</A>
+          >Memory Game</A>
           <A
             id="hidden"
             href="/rpc-simulator"
-          >CLICK ME!!!</A>
+          >RPC Simulator</A>
           <Socials />
         </div>
         <div id="right" ref={setRightDiv}>

@@ -30,7 +30,7 @@ function FoundMessageContainer() {
 
 
                 <h1 id="hello"> Attention:  </h1>
-                <h1 id="found-message">Congrats on finding one of many hidden games!</h1>
+                <h1 id="found-message">Congrats on finding one of many hidden features!</h1>
                 <p>Click the purple logo in the top-left corner to go back home.</p>
             </div>
 

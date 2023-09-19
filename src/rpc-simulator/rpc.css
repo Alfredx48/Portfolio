@@ -10,7 +10,10 @@ input {
 .buttons {
 	display: flex;
 	justify-content: space-between;
-	margin-bottom: 2%;
+    margin: auto;
+	margin-bottom: 5%;
+    gap: 5%;
+    text-align: center;
 }
 .border {
 	position: relative;
@@ -42,16 +45,16 @@ input {
   .scissors {
   background-color: red;
   } */
-/* 
-  @media (max-width: 1024px) {
-
-    .buttons {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 2%;
+  @media (max-width: 768px) { /* Change this value based on when you want the design to adjust */
+    body{
+padding: .5rem;
     }
     .rpc-sim {
-      
+        margin-top: 5vh;
     }
-  }  */
+    .border {
+        width: 400px; /* Reduced width */
+        height: 500px; /* Reduced height */
+        margin: auto;
+    }
+}

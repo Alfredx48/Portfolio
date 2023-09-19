@@ -3,9 +3,14 @@ import { createStore } from "solid-js/store";
 import Toastify from 'toastify-js'
 import "toastify-js/src/toastify.css"
 import "./rpc.css";
+import FoundMessageContainer from "../components/FoundMessageContainer";
 
-const BOUND_WIDTH = 600;
-const BOUND_HEIGHT = 600;
+const screenWidth = window.innerWidth;
+
+// Adjust the BOUND_WIDTH and BOUND_HEIGHT based on the screen width
+const BOUND_WIDTH = screenWidth <= 1024 ? 400 : 600; // Change the 1024 value if necessary
+const BOUND_HEIGHT = screenWidth <= 1024 ? 400 : 500;
+
 const RPC_AMOUNT = 10;
 
 const [numberOfRPC, setNumberOfRPC] = createSignal(RPC_AMOUNT);
@@ -47,7 +52,7 @@ function Rpc() {
         paper: 0,
         scissors: 0
     });
-    
+
 
     function haveCollided(e1, e2) {
         const dx = e1.x - e2.x;
@@ -58,34 +63,34 @@ function Rpc() {
     let frameId;
 
     const updateRPC = () => {
-      const updatedRPC = RPC.map(rpc => {
-          let newVX = rpc.vx;
-          let newVY = rpc.vy;
+        const updatedRPC = RPC.map(rpc => {
+            let newVX = rpc.vx;
+            let newVY = rpc.vy;
 
-          // Boundary Collision
-          if (rpc.x < 0 || rpc.x >= BOUND_WIDTH - 25) {
-              newVX = -rpc.vx;
-              rpc.x = rpc.x < 0 ? 0 : BOUND_WIDTH - 25;  // Adjust the x position inside boundary
-          }
-          if (rpc.y < 0 || rpc.y >= BOUND_HEIGHT - 25) {
-              newVY = -rpc.vy;
-              rpc.y = rpc.y < 0 ? 0 : BOUND_HEIGHT - 25;  // Adjust the y position inside boundary
-          }
-
-
-          const scaledVX = newVX * multiplier();
-          const scaledVY = newVY * multiplier();
-
-          return {
-              ...rpc,
-              vx: newVX,  // keep the original vx unchanged
-              vy: newVY,  // keep the original vy unchanged
-              x: rpc.x + scaledVX,
-              y: rpc.y + scaledVY
-          };
+            // Boundary Collision
+            if (rpc.x < 0 || rpc.x >= BOUND_WIDTH - 25) {
+                newVX = -rpc.vx;
+                rpc.x = rpc.x < 0 ? 0 : BOUND_WIDTH - 25;  // Adjust the x position inside boundary
+            }
+            if (rpc.y < 0 || rpc.y >= BOUND_HEIGHT - 25) {
+                newVY = -rpc.vy;
+                rpc.y = rpc.y < 0 ? 0 : BOUND_HEIGHT - 25;  // Adjust the y position inside boundary
+            }
 
 
-      });
+            const scaledVX = newVX * multiplier();
+            const scaledVY = newVY * multiplier();
+
+            return {
+                ...rpc,
+                vx: newVX,  // keep the original vx unchanged
+                vy: newVY,  // keep the original vy unchanged
+                x: rpc.x + scaledVX,
+                y: rpc.y + scaledVY
+            };
+
+
+        });
 
         function resolveCollision(type1, type2) {
             if (type1 === "rock" && type2 === "scissors") return type1;
@@ -137,6 +142,7 @@ function Rpc() {
 
 
     const startSim = () => {
+        if(simEnded()) return;
         setSimEnded(false);
         cancelAnimationFrame(frameId);  // Cancel any previous animation frame requests
         frameId = requestAnimationFrame(updateRPC);
@@ -217,7 +223,7 @@ function Rpc() {
             setDisabled(true);
         }
     });
-    
+
 
     createEffect(() => {
         setRPC(createRPC());
@@ -244,41 +250,44 @@ function Rpc() {
     };
 
     return (
+        <>
+            <FoundMessageContainer />
         <div class="rpc-sim">
-            <div class="stats">
-                <p>Rock: {winners().rock} Paper: {winners().paper} Scissors: {winners().scissors} </p>
-            </div>
-            <div class="buttons">
-                <button onClick={startSim}> Start </button>
-                <button onClick={() => {
-                    setMultiplier(1)
-                    resetGame()
-                }}>Reset</button >
-                <button onClick={() => setMultiplier(multiplier() * 1.5)}>Increase Speed</button>
-                <button onClick={() => setMultiplier(multiplier() / 1.5)}>Decrease Speed</button>
-                <label>Count per Type:{" "}
-                    <input
-                        type="number"
-                        value={numberOfRPC()}
-                        min="1"
-                        max="100"
-                        onInput={(e) => noRPCOver(e)}
+                <div class="stats">
+                    <p>Rock: {winners().rock} Paper: {winners().paper} Scissors: {winners().scissors} </p>
+                </div>
+                <div class="buttons">
+                    <button onClick={startSim}> Start </button>
+                    <button onClick={() => {
+                        setMultiplier(1)
+                        resetGame()
+                    }}>Reset</button >
+                    <button onClick={() => setMultiplier(multiplier() * 1.5)}>Increase Speed</button>
+                    <button onClick={() => setMultiplier(multiplier() / 1.5)}>Decrease Speed</button>
+                    <label>Count per Type:{" "}
+                        <input
+                            type="number"
+                            value={numberOfRPC()}
+                            min="1"
+                            max="100"
+                            onInput={(e) => noRPCOver(e)}
 
-                    />
-                </label>
+                        />
+                    </label>
+                </div>
+                <div class="border">
+                    {RPC.map(rpc => (
+                        <div
+                            class="rpc"
+                            style={{
+                                left: `${rpc.x}px`,
+                                top: `${rpc.y}px`
+                            }}
+                        >{rpc.type === 'rock' ? '🪨' : rpc.type === 'paper' ? '🧻' : '✂️'}</div>
+                    ))}
+                </div>
             </div>
-            <div class="border">
-                {RPC.map(rpc => (
-                    <div
-                        class="rpc"
-                        style={{
-                            left: `${rpc.x}px`,
-                            top: `${rpc.y}px`
-                        }}
-                    >{rpc.type === 'rock' ? '🪨' : rpc.type === 'paper' ? '🧻' : '✂️'}</div>
-                ))}
-            </div>
-        </div>
+        </>
     );
 }
 
