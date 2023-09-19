@@ -237,7 +237,7 @@ function Rpc() {
   console.log(RPC)
   return (
     <>
-      <button onClick={startSim}> {simEnded() ? "Reset" : "Start"} </button>
+      <button onClick={startSim}> Start </button>
       <button onClick={() => {
         setMultiplier(1)
         resetGame()
