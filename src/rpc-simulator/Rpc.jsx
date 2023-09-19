@@ -42,12 +42,12 @@ const [RPC, setRPC] = createStore(createRPC());
 function Rpc() {
     const [disabled, setDisabled] = createSignal(true);
     const [simEnded, setSimEnded] = createSignal(false);
-    const [winners, setWinners] = createSignal([
-        { rock: 0 },
-        { paper: 0 },
-        { scissors: 0 }
-    ]);
-
+    const [winners, setWinners] = createSignal({
+        rock: 0,
+        paper: 0,
+        scissors: 0
+    });
+    
 
     function haveCollided(e1, e2) {
         const dx = e1.x - e2.x;
@@ -179,7 +179,8 @@ function Rpc() {
                 duration: 3000
 
             }).showToast();
-            setWinners({ scissors: winners().scissors + 1 });
+            setWinners(prev => ({ ...prev, scissors: prev.scissors + 1 }));
+            console.log(winners())
             setSimEnded(true);
             setDisabled(true);
         } else if (rockCount === 0 && scissorsCount === 0 && paperCount > 0) {
@@ -194,7 +195,8 @@ function Rpc() {
                 duration: 3000
 
             }).showToast();
-            setWinners({ paper: winners().paper + 1 });
+            setWinners(prev => ({ ...prev, paper: prev.paper + 1 }));
+            console.log(winners())
             setSimEnded(true);
             setDisabled(true);
         } else if (paperCount === 0 && scissorsCount === 0 && rockCount > 0) {
@@ -209,11 +211,13 @@ function Rpc() {
                 duration: 3000
 
             }).showToast();
-            setWinners({ rock: winners().rock + 1 });
+            setWinners(prev => ({ ...prev, rock: prev.rock + 1 }));
+            console.log(winners())
             setSimEnded(true);
             setDisabled(true);
         }
     });
+    
 
     createEffect(() => {
         setRPC(createRPC());
@@ -241,6 +245,9 @@ function Rpc() {
 
     return (
         <div class="rpc-sim">
+            <div class="stats">
+                <p>Rock: {winners().rock} Paper: {winners().paper} Scissors: {winners().scissors} </p>
+            </div>
             <div class="buttons">
                 <button onClick={startSim}> Start </button>
                 <button onClick={() => {
