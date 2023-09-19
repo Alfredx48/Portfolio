@@ -40,7 +40,7 @@ function HomePage() {
           >CLICK ME!!!</A>
           <A
             id="hidden"
-            href="/rpc-sim"
+            href="/rpc-simulator"
           >CLICK ME!!!</A>
           <Socials />
         </div>

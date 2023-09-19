@@ -1,7 +1,6 @@
 import cssImage from '../../../assets/memory-game-images/css.png';
 import dartImage from '../../../assets/memory-game-images/dart.png';
 import firebaseImage from '../../../assets/memory-game-images/firebase.png';
-import fireshipImage from '../../../assets/memory-game-images/fireship.png';
 import flutterImage from '../../../assets/memory-game-images/flutter.png';
 import goImage from '../../../assets/memory-game-images/go.png';
 import html5Image from '../../../assets/memory-game-images/html5.png';
@@ -14,8 +13,9 @@ import pythonImage from '../../../assets/memory-game-images/python.png';
 import reactImage from '../../../assets/memory-game-images/react.png';
 import rustImage from '../../../assets/memory-game-images/rust.png';
 import sqlImage from '../../../assets/memory-game-images/sql.png';
-import stackImage from '../../../assets/memory-game-images/stack.png';
-import tsImage from '../../../assets/memory-game-images/ts.png';
+// import stackImage from '../../../assets/memory-game-images/stack.png';
+// import tsImage from '../../../assets/memory-game-images/ts.png';
+// import fireshipImage from '../../../assets/memory-game-images/fireship.png';
 
 const shuffle = () => {
 	const assets = [

@@ -1,0 +1,57 @@
+/* styles.css */
+
+.rpc-sim {
+	margin-top: 10vh;
+}
+input {
+	text-align: center;
+}
+
+.buttons {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 2%;
+}
+.border {
+	position: relative;
+	width: 600px;
+	height: 600px;
+	border: 1px solid black;
+}
+
+.rpc {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: xx-large;
+}
+/* 
+  .rock {
+  background-color: gray;
+  }
+  
+  .paper {
+  background-color: white;
+  border: 1px solid black;
+  }
+  
+  .scissors {
+  background-color: red;
+  } */
+/* 
+  @media (max-width: 1024px) {
+
+    .buttons {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2%;
+    }
+    .rpc-sim {
+      
+    }
+  }  */

@@ -4,7 +4,6 @@ import TicTacToe from './components/TicTacToe';
 import "./App.css"
 import HomePage from './components/HomePage';
 import MemoryGame from "./components/memory-game/components/MemoryGame";
-import Rpc from "./components/RPC/Rpc";
 const Contact = lazy(() => import("./components/Contact"))
 const Logo = lazy(() => import("./components/Logo"))
 import "solid-devtools"
@@ -37,7 +36,8 @@ function App() {
         <Route path="/contact" component={Contact} />
         <Route path="/tictactoe" component={TicTacToe} />
         <Route path="/memory-game" component={MemoryGame} />
-        <Route path="/rpc-sim" component={Rpc} />
+        <Route path="/rpc-simulator" component={lazy(() => import("./rpc-simulator/Rpc.jsx"))} />
+        <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
     </>
   );
