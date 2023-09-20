@@ -9,7 +9,7 @@ const screenWidth = window.innerWidth;
 
 // Adjust the BOUND_WIDTH and BOUND_HEIGHT based on the screen width
 const BOUND_WIDTH = screenWidth <= 1024 ? 400 : 600; // Change the 1024 value if necessary
-const BOUND_HEIGHT = screenWidth <= 1024 ? 400 : 500;
+const BOUND_HEIGHT = screenWidth <= 1024 ? 500 : 600;
 
 const RPC_AMOUNT = 10;
 
