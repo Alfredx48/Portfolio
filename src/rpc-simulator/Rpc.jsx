@@ -1,34 +1,29 @@
 import { onCleanup, createEffect, createSignal, onMount } from "solid-js";
-import { createStore } from "solid-js/store";
 import Toastify from 'toastify-js'
 import "toastify-js/src/toastify.css"
 import "./rpc.css";
 import FoundMessageContainer from "../components/FoundMessageContainer";
 
-const screenWidth = window.innerWidth;
-
-// Adjust the BOUND_WIDTH and BOUND_HEIGHT based on the screen width
-const BOUND_WIDTH = screenWidth <= 1024 ? 400 : 600; // Change the 1024 value if necessary
-const BOUND_HEIGHT = screenWidth <= 1024 ? 500 : 600;
+// Adjust the getBoundWidth() and BOUND_HEIGHT based on the screen width
+const getBoundWidth = () => window.innerWidth <= 1024 ? 400 : 600;
+const getBoundHeight = () => window.innerWidth <= 1024 ? 500 : 600;
 
 const RPC_AMOUNT = 10;
 
 const [numberOfRPC, setNumberOfRPC] = createSignal(RPC_AMOUNT);
 const [multiplier, setMultiplier] = createSignal(1);
 
-
 function createEntity(type) {
     return {
         type,
-        x: Math.random() * (BOUND_WIDTH - 40),
-        y: Math.random() * (BOUND_HEIGHT - 40),
+        x: Math.random() * (getBoundWidth() - 40),
+        y: Math.random() * (getBoundHeight() - 40),
         baseVX: 0.5,
         baseVY: 0.5,
         vx: 0.5,
         vy: 0.5
     };
 }
-
 
 const createRPC = () => {
     const initialEntities = [];
@@ -42,7 +37,7 @@ const createRPC = () => {
 
 
 
-const [RPC, setRPC] = createStore(createRPC());
+const [RPC, setRPC] = createSignal(createRPC());
 
 function Rpc() {
     const [disabled, setDisabled] = createSignal(true);
@@ -63,18 +58,18 @@ function Rpc() {
     let frameId;
 
     const updateRPC = () => {
-        const updatedRPC = RPC.map(rpc => {
+        const updatedRPC = RPC().map(rpc => {
             let newVX = rpc.vx;
             let newVY = rpc.vy;
 
             // Boundary Collision
-            if (rpc.x < 0 || rpc.x >= BOUND_WIDTH - 25) {
+            if (rpc.x < 0 || rpc.x >= getBoundWidth() - 25) {
                 newVX = -rpc.vx;
-                rpc.x = rpc.x < 0 ? 0 : BOUND_WIDTH - 25;  // Adjust the x position inside boundary
+                rpc.x = rpc.x < 0 ? 0 : getBoundWidth() - 25;  // Adjust the x position inside boundary
             }
-            if (rpc.y < 0 || rpc.y >= BOUND_HEIGHT - 25) {
+            if (rpc.y < 0 || rpc.y >= getBoundHeight() - 25) {
                 newVY = -rpc.vy;
-                rpc.y = rpc.y < 0 ? 0 : BOUND_HEIGHT - 25;  // Adjust the y position inside boundary
+                rpc.y = rpc.y < 0 ? 0 : getBoundHeight() - 25;  // Adjust the y position inside boundary
             }
 
 
@@ -142,7 +137,7 @@ function Rpc() {
 
 
     const startSim = () => {
-        if(simEnded()) return;
+        if (simEnded()) return;
         setSimEnded(false);
         cancelAnimationFrame(frameId);  // Cancel any previous animation frame requests
         frameId = requestAnimationFrame(updateRPC);
@@ -159,15 +154,19 @@ function Rpc() {
         setDisabled(true);
         setSimEnded(false);
         setNumberOfRPC(RPC_AMOUNT);
+        setMultiplier(1);
         cancelAnimationFrame(frameId); // Stop the update loop
     };
+
+    const increaseSpeedHandler = () => setMultiplier(multiplier() * 1.5);
+    const decreaseSpeedHandler = () => setMultiplier(multiplier() / 1.5);
 
     //Check Winner
     createEffect(() => {
         if (simEnded() || disabled()) return;
 
         let rockCount = 0, paperCount = 0, scissorsCount = 0;
-        RPC.forEach(rpc => {
+        RPC().forEach(rpc => {
             if (rpc.type === 'rock') rockCount++;
             else if (rpc.type === 'paper') paperCount++;
             else if (rpc.type === 'scissors') scissorsCount++;
@@ -186,7 +185,6 @@ function Rpc() {
 
             }).showToast();
             setWinners(prev => ({ ...prev, scissors: prev.scissors + 1 }));
-            console.log(winners())
             setSimEnded(true);
             setDisabled(true);
         } else if (rockCount === 0 && scissorsCount === 0 && paperCount > 0) {
@@ -202,7 +200,6 @@ function Rpc() {
 
             }).showToast();
             setWinners(prev => ({ ...prev, paper: prev.paper + 1 }));
-            console.log(winners())
             setSimEnded(true);
             setDisabled(true);
         } else if (paperCount === 0 && scissorsCount === 0 && rockCount > 0) {
@@ -218,7 +215,6 @@ function Rpc() {
 
             }).showToast();
             setWinners(prev => ({ ...prev, rock: prev.rock + 1 }));
-            console.log(winners())
             setSimEnded(true);
             setDisabled(true);
         }
@@ -230,6 +226,7 @@ function Rpc() {
     });
 
     const noRPCOver = (e) => {
+        if (simEnded()) return;
         const val = parseInt(e.target.value, 10);
         if (val > 100) {
             Toastify({
@@ -252,18 +249,15 @@ function Rpc() {
     return (
         <>
             <FoundMessageContainer />
-        <div class="rpc-sim">
+            <div class="rpc-sim">
                 <div class="stats">
                     <p>Rock: {winners().rock} Paper: {winners().paper} Scissors: {winners().scissors} </p>
                 </div>
                 <div class="buttons">
                     <button onClick={startSim}> Start </button>
-                    <button onClick={() => {
-                        setMultiplier(1)
-                        resetGame()
-                    }}>Reset</button >
-                    <button onClick={() => setMultiplier(multiplier() * 1.5)}>Increase Speed</button>
-                    <button onClick={() => setMultiplier(multiplier() / 1.5)}>Decrease Speed</button>
+                    <button onClick={resetGame}>Reset</button >
+                    <button onClick={increaseSpeedHandler}>Increase Speed</button>
+                    <button onClick={decreaseSpeedHandler}>Decrease Speed</button>
                     <label>Count per Type:{" "}
                         <input
                             type="number"
@@ -276,7 +270,7 @@ function Rpc() {
                     </label>
                 </div>
                 <div class="border">
-                    {RPC.map(rpc => (
+                    {RPC().map(rpc => (
                         <div
                             class="rpc"
                             style={{
