@@ -18,8 +18,8 @@ function Rpc() {
     function createEntity(type) {
         return {
             type,
-            x: Math.random() * (getBoundWidth() - 60),
-            y: Math.random() * (getBoundHeight() - 60),
+            x: Math.random() * (getBoundWidth() - 100),
+            y: Math.random() * (getBoundHeight() - 100),
             baseVX: 0.5,
             baseVY: 0.5,
             vx: 0.5,
