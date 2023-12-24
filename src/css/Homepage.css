@@ -18,6 +18,7 @@ a {
 	width: 70%;
 	margin: auto;
 	margin-top: 5%;
+	gap: 10%;
 }
 
 #left {
@@ -89,7 +90,6 @@ a {
 #header-div {
 	display: flex;
 	flex-direction: column;
-	gap: 20%;
 }
 
 #header-div h1 {

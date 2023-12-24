@@ -42,6 +42,10 @@ function HomePage() {
             id="hidden"
             href="/rpc-simulator"
           >RPC Simulator</A>
+          {/* <A
+            id="hidden"
+            href="/whack-a-mole"
+          >Whack-A-Mole</A> */}
           <Socials />
         </div>
         <div id="right" ref={setRightDiv}>

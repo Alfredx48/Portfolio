@@ -1,45 +1,46 @@
-import { onCleanup, createEffect, createSignal, onMount } from "solid-js";
+import { onCleanup, createEffect, createSignal } from "solid-js";
 import Toastify from 'toastify-js'
 import "toastify-js/src/toastify.css"
 import "./rpc.css";
-import FoundMessageContainer from "../components/FoundMessageContainer";
+import FoundMessageContainer from "../FoundMessageContainer"
 
-// Adjust the getBoundWidth() and BOUND_HEIGHT based on the screen width
-const getBoundWidth = () => window.innerWidth <= 1024 ? 400 : 600;
-const getBoundHeight = () => window.innerWidth <= 1024 ? 500 : 600;
-
-const RPC_AMOUNT = 10;
-
-const [numberOfRPC, setNumberOfRPC] = createSignal(RPC_AMOUNT);
-const [multiplier, setMultiplier] = createSignal(1);
-
-function createEntity(type) {
-    return {
-        type,
-        x: Math.random() * (getBoundWidth() - 40),
-        y: Math.random() * (getBoundHeight() - 40),
-        baseVX: 0.5,
-        baseVY: 0.5,
-        vx: 0.5,
-        vy: 0.5
-    };
-}
-
-const createRPC = () => {
-    const initialEntities = [];
-    for (let i = 0; i < numberOfRPC(); i++) {
-        initialEntities.push(createEntity('rock'));
-        initialEntities.push(createEntity('paper'));
-        initialEntities.push(createEntity('scissors'));
-    }
-    return initialEntities;
-}
-
-
-
-const [RPC, setRPC] = createSignal(createRPC());
 
 function Rpc() {
+    // Adjust the getBoundWidth() and BOUND_HEIGHT based on the screen width
+    const getBoundWidth = () => window.innerWidth <= 1024 ? 400 : 800;
+    const getBoundHeight = () => window.innerWidth <= 1024 ? 500 : 600;
+
+    const RPC_AMOUNT = 10;
+
+    const [numberOfRPC, setNumberOfRPC] = createSignal(RPC_AMOUNT);
+    const [multiplier, setMultiplier] = createSignal(1);
+
+    function createEntity(type) {
+        return {
+            type,
+            x: Math.random() * (getBoundWidth() - 60),
+            y: Math.random() * (getBoundHeight() - 60),
+            baseVX: 0.5,
+            baseVY: 0.5,
+            vx: 0.5,
+            vy: 0.5
+        };
+    }
+
+    const createRPC = () => {
+        const initialEntities = [];
+        for (let i = 0; i < numberOfRPC(); i++) {
+            initialEntities.push(createEntity('rock'));
+            initialEntities.push(createEntity('paper'));
+            initialEntities.push(createEntity('scissors'));
+        }
+        return initialEntities;
+    }
+
+
+
+    const [RPC, setRPC] = createSignal(createRPC());
+
     const [disabled, setDisabled] = createSignal(true);
     const [simEnded, setSimEnded] = createSignal(false);
     const [winners, setWinners] = createSignal({
@@ -52,10 +53,19 @@ function Rpc() {
     function haveCollided(e1, e2) {
         const dx = e1.x - e2.x;
         const dy = e1.y - e2.y;
-        return (dx * dx + dy * dy) <= 400; // 20 * 20
+        const effectiveRadius = 30;  // Adjust this based on your CSS visual size
+        return (dx * dx + dy * dy) <= (effectiveRadius * effectiveRadius);
     }
 
     let frameId;
+
+    function resolveCollision(type1, type2) {
+        if (type1 === "rock" && type2 === "scissors") return type1;
+        if (type1 === "scissors" && type2 === "paper") return type1;
+        if (type1 === "paper" && type2 === "rock") return type1;
+        return type2; // In all other cases including ties, return type2
+    }
+
 
     const updateRPC = () => {
         const updatedRPC = RPC().map(rpc => {
@@ -63,13 +73,13 @@ function Rpc() {
             let newVY = rpc.vy;
 
             // Boundary Collision
-            if (rpc.x < 0 || rpc.x >= getBoundWidth() - 25) {
+            if (rpc.x < 0 || rpc.x >= getBoundWidth() - 30) {
                 newVX = -rpc.vx;
-                rpc.x = rpc.x < 0 ? 0 : getBoundWidth() - 25;  // Adjust the x position inside boundary
+                rpc.x = rpc.x < 0 ? 0 : getBoundWidth() - 30;  // Adjust the x position inside boundary
             }
-            if (rpc.y < 0 || rpc.y >= getBoundHeight() - 25) {
+            if (rpc.y < 0 || rpc.y >= getBoundHeight() - 30) {
                 newVY = -rpc.vy;
-                rpc.y = rpc.y < 0 ? 0 : getBoundHeight() - 25;  // Adjust the y position inside boundary
+                rpc.y = rpc.y < 0 ? 0 : getBoundHeight() - 30;  // Adjust the y position inside boundary
             }
 
 
@@ -87,12 +97,6 @@ function Rpc() {
 
         });
 
-        function resolveCollision(type1, type2) {
-            if (type1 === "rock" && type2 === "scissors") return type1;
-            if (type1 === "scissors" && type2 === "paper") return type1;
-            if (type1 === "paper" && type2 === "rock") return type1;
-            return type2; // In all other cases including ties, return type2
-        }
 
         for (let i = 0; i < updatedRPC.length; i++) {
             for (let j = i + 1; j < updatedRPC.length; j++) {
@@ -102,7 +106,7 @@ function Rpc() {
                     const dx = updatedRPC[j].x - updatedRPC[i].x;
                     const dy = updatedRPC[j].y - updatedRPC[i].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
-                    const overlap = 20 - distance;
+                    const overlap = 60 - distance;
 
                     // Normalize the displacement vector
                     const nx = dx / distance;
@@ -144,6 +148,12 @@ function Rpc() {
         setDisabled(false);
     };
 
+    const temporaryStopSim = () => {
+        cancelAnimationFrame(frameId);
+        setDisabled(false);
+    };
+
+
 
     onCleanup(() => {
         cancelAnimationFrame(frameId);
@@ -160,6 +170,7 @@ function Rpc() {
 
     const increaseSpeedHandler = () => setMultiplier(multiplier() * 1.5);
     const decreaseSpeedHandler = () => setMultiplier(multiplier() / 1.5);
+    const resetSppedHandler = () => setMultiplier(1);
 
     //Check Winner
     createEffect(() => {
@@ -255,7 +266,9 @@ function Rpc() {
                 </div>
                 <div class="buttons">
                     <button onClick={startSim}> Start </button>
+                    <button onClick={temporaryStopSim}> Stop </button>
                     <button onClick={resetGame}>Reset</button >
+                    <button onClick={resetSppedHandler}>Reset Speed</button>
                     <button onClick={increaseSpeedHandler}>Increase Speed</button>
                     <button onClick={decreaseSpeedHandler}>Decrease Speed</button>
                     <label>Count per Type:{" "}
