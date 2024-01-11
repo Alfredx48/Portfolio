@@ -14,7 +14,7 @@ a {
 	display: flex;
 	flex-direction: row;
 	height: 100vh;
-	overflow: hidden;
+	/* overflow: hidden; */
 	width: 70%;
 	margin: auto;
 	margin-top: 5%;
@@ -30,12 +30,28 @@ a {
 	margin: 0 auto;
 }
 
+#footer {
+	width: 65%;
+	display: flex;
+	justify-content: space-evenly;
+	gap: 10%;
+	transition: transform 0.3s ease;
+}
+
 #right {
 	flex: 1;
 	overflow-y: auto;
 	padding-bottom: 5%;
 	scrollbar-width: none;
 	-ms-overflow-style: none;
+}
+
+#copywright {
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.65rem;
+    line-height: 2.66;
+    letter-spacing: 0.08333em;
+	font-weight: 400;
 }
 
 #right::-webkit-scrollbar {
@@ -69,13 +85,6 @@ a {
 	border-radius: 20%;
 }
 
-#footer {
-	width: 65%;
-	display: flex;
-	justify-content: space-evenly;
-	gap: 10%;
-	transition: transform 0.3s ease;
-}
 
 #social-img {
 	width: 50px;
@@ -237,5 +246,10 @@ a {
 
 	#hidden {
 		animation: blink 7s linear infinite, fade 7s linear infinite;
+	}
+
+	#copywright {
+		width: 1000;
+		text-align: center;
 	}
 }

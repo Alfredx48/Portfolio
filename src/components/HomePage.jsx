@@ -5,6 +5,7 @@ import Header from "./Header"
 import About from "./About"
 import Socials from "./Socials"
 import Projects from "./Projects"
+import Blob from "./Blob"
 
 
 function HomePage() {
@@ -29,6 +30,14 @@ function HomePage() {
       window.removeEventListener("wheel", handleScroll)
     })
   })
+
+  const currentYear = () => {
+    const year = new Date().getFullYear();
+    return year;
+  }
+
+  const copyRight = `COPYRIGHT © ${currentYear()} ALFRED SHAHEEN`
+
   return (
     <>
       <div id="homepage">
@@ -37,11 +46,11 @@ function HomePage() {
           <A
             id="hidden"
             href="/memory-game"
-          >Memory Game</A>
+            >Memory Game</A>
           <A
             id="hidden"
             href="/rpc-simulator"
-          >RPC Simulator</A>
+            >RPC Simulator</A>
           {/* <A
             id="hidden"
             href="/whack-a-mole"
@@ -51,12 +60,14 @@ function HomePage() {
         <div id="right" ref={setRightDiv}>
           <About />
           <Projects />
+          <footer id="copywright"> {copyRight}</footer>
           <A
             id="hidden"
             href="/tictactoe"
-          >TicTacToe</A>
+            >TicTacToe</A>
         </div>
       </div>
+      <Blob />
     </>
 
   )

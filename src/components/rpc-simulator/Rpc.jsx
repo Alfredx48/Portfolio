@@ -11,6 +11,8 @@ function Rpc() {
     const getBoundHeight = () => window.innerWidth <= 1024 ? 500 : 600;
 
     const RPC_AMOUNT = 10;
+    const BOUNDARY_PADDING = 100;
+    const COLLISION_RADIUS = 30;
 
     const [numberOfRPC, setNumberOfRPC] = createSignal(RPC_AMOUNT);
     const [multiplier, setMultiplier] = createSignal(1);
@@ -18,14 +20,15 @@ function Rpc() {
     function createEntity(type) {
         return {
             type,
-            x: Math.random() * (getBoundWidth() - 100),
-            y: Math.random() * (getBoundHeight() - 100),
-            baseVX: 0.5,
-            baseVY: 0.5,
-            vx: 0.5,
-            vy: 0.5
+            x: Math.random() * (getBoundWidth() - BOUNDARY_PADDING),
+            y: Math.random() * (getBoundHeight() - BOUNDARY_PADDING),
+            baseVX: Math.random(),
+            baseVY: Math.random(),
+            vx: Math.random(),
+            vy: Math.random()
         };
     }
+    
 
     const createRPC = () => {
         const initialEntities = [];
@@ -49,14 +52,13 @@ function Rpc() {
         scissors: 0
     });
 
-
     function haveCollided(e1, e2) {
         const dx = e1.x - e2.x;
         const dy = e1.y - e2.y;
-        const effectiveRadius = 30;  // Adjust this based on your CSS visual size
-        return (dx * dx + dy * dy) <= (effectiveRadius * effectiveRadius);
+        const distanceSquared = dx * dx + dy * dy;
+        const effectiveRadiusSquared = COLLISION_RADIUS * COLLISION_RADIUS;
+        return distanceSquared <= effectiveRadiusSquared;
     }
-
     let frameId;
 
     function resolveCollision(type1, type2) {

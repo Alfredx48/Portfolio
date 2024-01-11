@@ -4,7 +4,6 @@ import { render } from 'solid-js/web';
 import { Router } from '@solidjs/router';
 import './index.css';
 import App from './App';
-import Blob from './components/Blob';
 
 
 
@@ -26,7 +25,6 @@ render(() => (
     <Router >
       <App />
     </Router>
-    <Blob />
   </>
 ),
   root
