@@ -1,12 +1,8 @@
 /* @refresh reload */
-import "solid-devtools"
 import { render } from 'solid-js/web';
 import { Router } from '@solidjs/router';
 import './index.css';
 import App from './App';
-
-
-
 
 window.onunload = function () { window.scrollTo(0, 0) };
 
