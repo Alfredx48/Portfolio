@@ -1,70 +1,93 @@
-
-
-/* body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: linear-gradient(250deg, cornflowerblue, crimson);
-  z-index: -1;
-} */
-
-.container {
-  height: 100vh;
+.game-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.header {
   text-align: center;
-  /* background: linear-gradient(250deg, cornflowerblue, crimson); */
 }
 
-table td {
-  border: 1px solid grey;
-  width: 100px;
-  height: 100px;
-  color: deepskyblue;
+.title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, #9333ea, #db2777);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-table {
-  background: black;
+.turn-indicator {
+  font-size: 2rem;
+}
+
+.current-turn {
+  font-weight: bold;
+  color: #9333ea;
+}
+
+.game-board {
+  border-collapse: collapse;
+}
+
+.cell {
+  width: 8rem;
+  height: 8rem;
+  border: 6px solid #9333ea;
+  text-align: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: black;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-table td {
-  padding: 10px;
+.cell:hover {
+  background-color: #f3e8ff;
 }
 
-table tr:first-child {
-  box-shadow: 0px 8px 5px -5px cornsilk;
+.winner-container {
+  text-align: center;
 }
 
-table tr:nth-child(2) {
-  box-shadow: 0px -8px 5px -5px cornsilk, 0px 8px 5px -5px cornsilk;
+.winner-text {
+  font-size: 2.5rem;
+  margin-bottom: 1rem; 
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #9333ea;
 }
 
-table tr:last-child {
-  box-shadow: 0px -8px 5px -5px cornsilk;
+.restart-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #3c1c65;
+  color: white;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
 }
 
-table tr td:first-child {
-  box-shadow: 8px 0px 5px -5px cornsilk;
+.restart-button:hover {
+  background-color: #2d164d;
+  transform: scale(1.05);
 }
 
-table tr td:nth-child(2) {
-  box-shadow: -8px 0px 5px -5px cornsilk, 8px 0px 5px -5px cornsilk;
+.restart-button:active {
+  transform: scale(0.95);
 }
 
-table tr td:last-child {
-  box-shadow: -8px 0px 5px -5px cornsilk;
+.animate-in {
+  animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-td:hover {
-  background: paleturquoise;
-}
-
-.links {
-  padding: 12px;
+@keyframes scaleIn {
+  from {
+    transform: scale(0) rotate(0deg);
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+  }
 }

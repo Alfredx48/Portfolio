@@ -1,98 +1,141 @@
-import { createSignal } from 'solid-js';
 import "./tictactoe.css"
 import FoundMessageContainer from '../FoundMessageContainer';
 
-function TicTacToe() {
-    const [cells, setCells] = createSignal(Array(9).fill(''));
-    const [turn, setTurn] = createSignal('X');
+import { createSignal, createEffect } from "solid-js";
+
+const TicTacToe = () => {
+    // SolidJS signals must be called as functions: turn(), cells()
+    const [turn, setTurn] = createSignal("X");
     const [winner, setWinner] = createSignal(null);
-    const [clicked, setClicked] = createSignal(0);
+    const [cells, setCells] = createSignal(Array(9).fill(""));
     const [showWinner, setShowWinner] = createSignal(false);
 
+    const Cell = (props) => {
+        return (
+            <td
+                onClick={() => handleClick(props.num)}
+                class="cell"
+            >
+                {cells()[props.num]}
+            </td>
+        );
+    };
+
+    const Table = () => {
+        return (
+            <table class="game-board">
+                <tbody>
+                    <tr>
+                        <Cell num={0} />
+                        <Cell num={1} />
+                        <Cell num={2} />
+                    </tr>
+                    <tr>
+                        <Cell num={3} />
+                        <Cell num={4} />
+                        <Cell num={5} />
+                    </tr>
+                    <tr>
+                        <Cell num={6} />
+                        <Cell num={7} />
+                        <Cell num={8} />
+                    </tr>
+                </tbody>
+            </table>
+        );
+    };
+
     const checkForWinner = (squares) => {
-        const winningCombinations = [
-            [0, 1, 2], // across
-            [3, 4, 5], // across
-            [6, 7, 8], // across
-            [0, 3, 6], // down
-            [1, 4, 7], // down
-            [2, 5, 8], // down
-            [0, 4, 8], // diagonal
-            [2, 4, 6], // diagonal
+        // Define all possible winning combinations on a tic-tac-toe board
+        // Each sub-array represents indices that form a line:
+        // [0, 1, 2] → First row
+        // [3, 4, 5] → Second row
+        // [6, 7, 8] → Third row
+        // [0, 3, 6] → First column
+        // [1, 4, 7] → Second column
+        // [2, 5, 8] → Third column
+        // [0, 4, 8] → Diagonal from top-left to bottom-right
+        // [2, 4, 6] → Diagonal from top-right to bottom-left
+        const winningCombos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+            [0, 4, 8], [2, 4, 6] // diagonals
         ];
-    
-        for (let pattern of winningCombinations) {
-            const [a, b, c] = pattern;
+
+        // Check each winning combination
+        for (let pattern of winningCombos) {
+            const [a, b, c] = pattern;  // Get three positions that would make a win
+
+            // Check if:
+            // 1. First position has a value (not empty)
+            // 2. All three positions have the same value (all X's or all O's)
             if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-                setWinner(squares[a]);
-                setShowWinner(true);
+                setWinner(squares[a]);  // Set winner to X or O
+                setShowWinner(true);    // Show the winner announcement
                 return;
             }
         }
-    
-        // Check for a draw only if all cells have been clicked and no winner was found
-        if (!squares.includes('') && !winner()) {
-            setWinner('Nobody'); // Setting the winner to 'Nobody' in case of a draw
+
+        // If no winner is found and no empty cells remain (no "")
+        // then the game is a draw
+        if (!squares.includes("") && !winner()) {
+            setWinner("Draw");
             setShowWinner(true);
         }
     };
-    
 
     const handleClick = (num) => {
-        if (winner()) return;
+        // Prevent moves if cell is taken or game is over
+        if (cells()[num] || showWinner()) return;
 
-        if (cells()[num] !== "") {
-            alert("already clicked");
-            return;
-        }
-
+        // Update the game board with the current player's move
         let squares = [...cells()];
-        setClicked(prev => prev + 1);
-
-        if (turn() === 'X') {
-            squares[num] = 'X';
-            setTurn('O');
-        } else {
-            squares[num] = 'O';
-            setTurn('X');
-        }
+        squares[num] = turn();
 
         setCells(squares);
+        setTurn(turn() === "X" ? "O" : "X");
+        // Check if this move resulted in a win
         checkForWinner(squares);
-    }
+    };
 
     const handleRestart = () => {
         setWinner(null);
-        setCells(Array(9).fill(''));
-        setTurn('X');
-        setClicked(0);
+        setCells(Array(9).fill(""));
         setShowWinner(false);
-    }
+        setTurn("X");
+    };
 
     return (
-        <div class='container'>
+        <>
             <FoundMessageContainer />
-            <h1>TicTacToe</h1>
-            <h2>Turn: {turn()}</h2>
-            <table>
-                <tbody>
-                    {Array(3).fill().map((_, i) =>
-                        <tr>
-                            {Array(3).fill().map((_, j) =>
-                                <td onClick={() => handleClick(i * 3 + j)}>{cells()[i * 3 + j]}</td>
-                            )}
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-            {showWinner() && (
-                <div>
-                    <p>{winner() || 'Nobody'} is the winner</p>
-                    <button onClick={handleRestart}>Play Again</button>
+            <div class="game-container">
+                <div class="header animate-in">
+                    <h1 class="title">TicTacToe</h1>
+                    <h2 class="turn-indicator">
+                        Turn: <span class="current-turn">{turn()}</span>
+                    </h2>
                 </div>
-            )}
-        </div>
+
+                <div class="board-container animate-in">
+                    <Table />
+                </div>
+
+                {showWinner() && (
+                    <div class="winner-container animate-in">
+                        <p class="winner-text">
+                            {winner() === "Draw" ? "It's a draw!" : `${winner()} is the winner!`}
+                        </p>
+                        <button
+                            onClick={handleRestart}
+                            class="restart-button"
+                        >
+                            Play Again
+                        </button>
+                    </div>
+                )}
+            </div>
+        </>
     );
-}
+};
 
 export default TicTacToe;
