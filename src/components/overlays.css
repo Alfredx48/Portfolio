@@ -127,10 +127,11 @@ kbd {
 }
 
 /* ---------- Achievements ---------- */
+/* Sits beside the logo, which has empty space next to it on every page */
 .trophy-button {
-	position: fixed;
-	bottom: 1rem;
-	left: 1rem;
+	position: absolute;
+	top: 29px;
+	left: 92px;
 	z-index: 40;
 	padding: 0.45rem 0.85rem;
 	border: 1px solid var(--border);
@@ -147,6 +148,14 @@ kbd {
 .trophy-button:hover {
 	border-color: #a78bfa;
 	transform: translateY(-2px);
+}
+
+@media (max-width: 1024px) {
+	/* The logo shrinks to 44px here */
+	.trophy-button {
+		top: 19px;
+		left: 70px;
+	}
 }
 
 .trophies {
