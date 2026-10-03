@@ -1,0 +1,33 @@
+.segmented {
+	display: inline-flex;
+	padding: 3px;
+	border: 1px solid var(--border);
+	border-radius: calc(var(--radius) + 3px);
+	background: var(--bg-sunken);
+}
+
+.segmented button {
+	padding: 0.4rem 0.85rem;
+	border: 0;
+	border-radius: var(--radius);
+	background: none;
+	color: var(--text-muted);
+	font-size: 0.9rem;
+	font-weight: 500;
+	white-space: nowrap;
+	transition: background-color 0.15s, color 0.15s;
+}
+
+.segmented button:hover:not(:disabled) {
+	color: var(--text);
+}
+
+.segmented button.active {
+	background: var(--brand-hover);
+	color: #fff;
+}
+
+.segmented button:disabled {
+	cursor: not-allowed;
+	opacity: 0.6;
+}

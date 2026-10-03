@@ -1,93 +1,229 @@
-.game-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  padding: 2rem;
+/* Everything has to fit on one screen, so the board takes whatever height is left
+   after the rest of the page (measured at about 22.5rem, or 27.5rem on phones where
+   the settings wrap to two rows), between 12rem and 24rem. */
+.ttt {
+	--ttt-chrome: 23rem;
+	--ttt-size: min(24rem, 90vw, max(12rem, calc(100dvh - var(--ttt-chrome))));
+	gap: 0.9rem;
+	padding-top: 2rem;
+	padding-bottom: 1.5rem;
 }
 
-.header {
-  text-align: center;
+.ttt-title {
+	background: linear-gradient(to right, #a78bfa, #db2777);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	animation: ttt-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.title {
-  font-size: 3rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  background: linear-gradient(to right, #9333ea, #db2777);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.ttt-settings {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.6rem;
 }
 
-.turn-indicator {
-  font-size: 2rem;
+.ttt-scoreboard {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0.5rem;
+	width: min(24rem, 90vw);
 }
 
-.current-turn {
-  font-weight: bold;
-  color: #9333ea;
+/* Narrow screens: the logo sits above the title instead of beside it */
+@media (max-width: 640px) {
+	.ttt {
+		--ttt-chrome: 28rem;
+		padding-top: 4.5rem;
+	}
 }
 
-.game-board {
-  border-collapse: collapse;
+.ttt-score {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 0.3rem 0.5rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+	transition: border-color 0.3s;
 }
 
-.cell {
-  width: 8rem;
-  height: 8rem;
-  border: 6px solid #9333ea;
-  text-align: center;
-  font-size: 3rem;
-  font-weight: bold;
-  color: black;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.ttt-score.leading {
+	border-color: rgba(167, 139, 250, 0.6);
 }
 
-.cell:hover {
-  background-color: #f3e8ff;
+.ttt-score-label {
+	color: var(--text-muted);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
 }
 
-.winner-container {
-  text-align: center;
+.ttt-score-value {
+	font-size: 1.25rem;
+	line-height: 1.3;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
 }
 
-.winner-text {
-  font-size: 2.5rem;
-  margin-bottom: 1rem; 
-  margin-top: 1rem;
-  font-weight: bold;
-  color: #9333ea;
+.ttt-status {
+	min-height: 2rem;
+	font-size: 1.3rem;
+	font-weight: 600;
 }
 
-.restart-button {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  background-color: #3c1c65;
-  color: white;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
+/* Animated dots after "AI is thinking" */
+.ttt-thinking::after {
+	content: '';
+	display: inline-block;
+	width: 1.2em;
+	text-align: left;
+	animation: ttt-dots 1s steps(4) infinite;
 }
 
-.restart-button:hover {
-  background-color: #2d164d;
-  transform: scale(1.05);
+@keyframes ttt-dots {
+	0% { content: ''; }
+	25% { content: '.'; }
+	50% { content: '..'; }
+	75% { content: '...'; }
 }
 
-.restart-button:active {
-  transform: scale(0.95);
+.mark-X {
+	color: #c4b5fd;
 }
 
-.animate-in {
-  animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+.mark-O {
+	color: var(--accent);
 }
 
-@keyframes scaleIn {
-  from {
-    transform: scale(0) rotate(0deg);
-  }
-  to {
-    transform: scale(1) rotate(360deg);
-  }
+.ttt-board-wrap {
+	position: relative;
+	width: var(--ttt-size);
+}
+
+.ttt-board-wrap.shake {
+	animation: ttt-shake 0.5s ease;
+}
+
+.ttt-board {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+	padding: 8px;
+	border-radius: 14px;
+	background: #7c3aed;
+	animation: ttt-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ttt-board[aria-busy='true'] .ttt-cell:not(:disabled) {
+	cursor: wait;
+}
+
+.ttt-cell {
+	aspect-ratio: 1;
+	border: 0;
+	border-radius: 8px;
+	background: var(--bg-sunken);
+	font-size: calc(var(--ttt-size) / 6);
+	font-weight: 800;
+	line-height: 1;
+	transition: background-color 0.15s;
+}
+
+.ttt-cell.mark-X,
+.ttt-cell.mark-O {
+	animation: ttt-place 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ttt-cell:not(:disabled):hover {
+	background: #33264f;
+}
+
+.ttt-cell:disabled {
+	cursor: default;
+}
+
+/* Early draw: hatch the cells nobody needs to play */
+.ttt-board.dead-draw .ttt-cell.empty {
+	background: repeating-linear-gradient(
+		135deg,
+		var(--bg-sunken) 0 8px,
+		rgba(148, 163, 184, 0.12) 8px 10px
+	);
+	animation: ttt-fade-in 0.4s ease;
+}
+
+@keyframes ttt-fade-in {
+	from {
+		opacity: 0.3;
+	}
+}
+
+.ttt-cell.winning {
+	background: #4c2a85;
+}
+
+.ttt-win-line {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.ttt-win-line line {
+	stroke-width: 10;
+	stroke-linecap: round;
+	stroke-dasharray: 400;
+	stroke-dashoffset: 400;
+	filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.5));
+	animation: ttt-draw-line 0.45s ease-out 0.1s forwards;
+}
+
+.stroke-X {
+	stroke: #ede9fe;
+}
+
+.stroke-O {
+	stroke: #ccfbf1;
+}
+
+.ttt-actions {
+	display: flex;
+	gap: 0.75rem;
+}
+
+@keyframes ttt-in {
+	from {
+		transform: scale(0) rotate(0deg);
+	}
+	to {
+		transform: scale(1) rotate(360deg);
+	}
+}
+
+@keyframes ttt-place {
+	from {
+		transform: scale(0.4);
+	}
+}
+
+@keyframes ttt-draw-line {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+@keyframes ttt-shake {
+	20%,
+	60% {
+		transform: translateX(-8px);
+	}
+	40%,
+	80% {
+		transform: translateX(8px);
+	}
 }

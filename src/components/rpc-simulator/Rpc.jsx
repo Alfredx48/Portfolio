@@ -1,303 +1,321 @@
-import { onCleanup, createEffect, createSignal } from "solid-js";
-import Toastify from 'toastify-js'
-import "toastify-js/src/toastify.css"
-import "./rpc.css";
-import FoundMessageContainer from "../FoundMessageContainer"
+import { createSignal, For, onCleanup, onMount, Show } from 'solid-js';
+import { unlock } from '../../state/achievements';
+import { confetti } from '../../utils/confetti';
+import { load, save } from '../../utils/storage';
+import { toast } from '../../utils/toast';
+import Segmented from '../ui/Segmented';
+import PopulationChart from './PopulationChart';
+import {
+	clampToBounds,
+	COLOR,
+	countTypes,
+	createEntities,
+	createEntity,
+	EMOJI,
+	getWinner,
+	LABEL,
+	RADIUS,
+	step,
+	TYPES,
+} from './simulation';
+import './rpc.css';
 
+const DEFAULT_COUNT = 10;
+const MAX_COUNT = 100;
+const MAX_ENTITIES = 600;
+const MAX_WIDTH = 800;
+const MIN_SPEED = 0.25;
+const MAX_SPEED = 8;
+const MAX_FRAME_SECONDS = 1 / 30; // avoid huge jumps after the tab was in the background
+const MAX_SAMPLES = 600; // chart history is halved whenever it reaches this
+const PROPHET_STREAK = 3;
+
+const BET_OPTIONS = [
+	{ value: 'none', label: 'No bet' },
+	...TYPES.map((type) => ({ value: type, label: `${EMOJI[type]} ${LABEL[type]}` })),
+];
+const BRUSH_OPTIONS = TYPES.map((type) => ({
+	value: type,
+	label: EMOJI[type],
+	title: LABEL[type],
+	ariaLabel: `Drop ${LABEL[type].toLowerCase()}`,
+}));
 
 function Rpc() {
-    // Adjust the getBoundWidth() and BOUND_HEIGHT based on the screen width
-    const getBoundWidth = () => window.innerWidth <= 1024 ? 400 : 800;
-    const getBoundHeight = () => window.innerWidth <= 1024 ? 500 : 600;
+	let wrapper;
+	let canvas;
+	let ctx;
+	let size = { width: MAX_WIDTH, height: 600 };
+	let entities = [];
+	let frame = 0;
+	let lastTime = 0;
 
-    const RPC_AMOUNT = 10;
-    const BOUNDARY_PADDING = 100;
-    const COLLISION_RADIUS = 30;
+	// Chart history, sampled every `sampleEvery` seconds of simulated time
+	let samples = [];
+	let simTime = 0;
+	let sampleEvery = 0.1;
+	let nextSample = 0;
+	const [samplesVersion, setSamplesVersion] = createSignal(0);
 
-    const [numberOfRPC, setNumberOfRPC] = createSignal(RPC_AMOUNT);
-    const [multiplier, setMultiplier] = createSignal(1);
+	const [count, setCount] = createSignal(DEFAULT_COUNT);
+	const [speed, setSpeed] = createSignal(1);
+	const [running, setRunning] = createSignal(false);
+	const [roundStarted, setRoundStarted] = createSignal(false);
+	const [finished, setFinished] = createSignal(false);
+	const [counts, setCounts] = createSignal(countTypes([]));
+	const [scores, setScores] = createSignal({ rock: 0, paper: 0, scissors: 0 });
+	const [bet, setBet] = createSignal('none');
+	const [meddled, setMeddled] = createSignal(false);
+	const [streak, setStreak] = createSignal(0);
+	const [bestStreak, setBestStreak] = createSignal(load('rpc-best-streak', 0));
+	const [brush, setBrush] = createSignal('rock');
 
-    function createEntity(type) {
-        return {
-            type,
-            x: Math.random() * (getBoundWidth() - BOUNDARY_PADDING),
-            y: Math.random() * (getBoundHeight() - BOUNDARY_PADDING),
-            baseVX: Math.random(),
-            baseVY: Math.random(),
-            vx: Math.random(),
-            vy: Math.random()
-        };
-    }
-    
+	const draw = () => {
+		if (!ctx) return;
+		ctx.clearRect(0, 0, size.width, size.height);
+		for (const e of entities) ctx.fillText(EMOJI[e.type], e.x, e.y);
+	};
 
-    const createRPC = () => {
-        const initialEntities = [];
-        for (let i = 0; i < numberOfRPC(); i++) {
-            initialEntities.push(createEntity('rock'));
-            initialEntities.push(createEntity('paper'));
-            initialEntities.push(createEntity('scissors'));
-        }
-        return initialEntities;
-    }
+	const recordSample = () => {
+		samples.push({ t: simTime, ...countTypes(entities) });
+		if (samples.length >= MAX_SAMPLES) {
+			samples = samples.filter((_, i) => i % 2 === 0);
+			sampleEvery *= 2;
+		}
+		nextSample = simTime + sampleEvery;
+		setSamplesVersion((v) => v + 1);
+	};
 
+	const resize = () => {
+		const width = Math.min(wrapper.clientWidth || MAX_WIDTH, MAX_WIDTH);
+		const height = Math.round(Math.min(600, Math.max(380, width * 0.7)));
+		const dpr = window.devicePixelRatio || 1;
+		size = { width, height };
+		canvas.width = width * dpr;
+		canvas.height = height * dpr;
+		canvas.style.height = `${height}px`;
+		if (ctx) {
+			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+			ctx.font = `${RADIUS * 2}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillStyle = '#e2e8f0'; // only shows if the system has no colour emoji font
+		}
+		clampToBounds(entities, width, height);
+		draw();
+	};
 
+	const newBoard = () => {
+		entities = createEntities(count(), size.width, size.height);
+		samples = [];
+		simTime = 0;
+		sampleEvery = 0.1;
+		setCounts(countTypes(entities));
+		setFinished(false);
+		setRoundStarted(false);
+		setMeddled(false);
+		recordSample();
+		draw();
+	};
 
-    const [RPC, setRPC] = createSignal(createRPC());
+	const settleBet = (winner) => {
+		const message = `${EMOJI[winner]} ${LABEL[winner]} wins!`;
+		if (bet() === 'none') return toast(message);
+		if (meddled()) return toast(`${message} You meddled, so the bet doesn't count.`, 'info');
+		if (bet() !== winner) {
+			setStreak(0);
+			return toast(`${message} Your pick lost; streak reset.`, 'error');
+		}
+		setStreak((s) => s + 1);
+		if (streak() > bestStreak()) {
+			setBestStreak(streak());
+			save('rpc-best-streak', streak());
+		}
+		toast(`${message} You called it! 🔥 Streak: ${streak()}`);
+		const rect = canvas.getBoundingClientRect();
+		confetti({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+		if (streak() >= PROPHET_STREAK) unlock('rpc-prophet');
+	};
 
-    const [disabled, setDisabled] = createSignal(true);
-    const [simEnded, setSimEnded] = createSignal(false);
-    const [winners, setWinners] = createSignal({
-        rock: 0,
-        paper: 0,
-        scissors: 0
-    });
+	const tick = (time) => {
+		const dt = Math.min((time - lastTime) / 1000, MAX_FRAME_SECONDS) * speed();
+		lastTime = time;
+		step(entities, size.width, size.height, dt);
+		simTime += dt;
+		draw();
 
-    function haveCollided(e1, e2) {
-        const dx = e1.x - e2.x;
-        const dy = e1.y - e2.y;
-        const distanceSquared = dx * dx + dy * dy;
-        const effectiveRadiusSquared = COLLISION_RADIUS * COLLISION_RADIUS;
-        return distanceSquared <= effectiveRadiusSquared;
-    }
-    let frameId;
+		const current = countTypes(entities);
+		setCounts(current);
+		if (simTime >= nextSample) recordSample();
 
-    function resolveCollision(type1, type2) {
-        if (type1 === "rock" && type2 === "scissors") return type1;
-        if (type1 === "scissors" && type2 === "paper") return type1;
-        if (type1 === "paper" && type2 === "rock") return type1;
-        return type2; // In all other cases including ties, return type2
-    }
+		const winner = getWinner(current);
+		if (winner) {
+			recordSample();
+			pause();
+			setFinished(true);
+			setRoundStarted(false);
+			setScores((prev) => ({ ...prev, [winner]: prev[winner] + 1 }));
+			settleBet(winner);
+			return;
+		}
+		frame = requestAnimationFrame(tick);
+	};
 
+	const start = () => {
+		if (finished()) newBoard();
+		setRunning(true);
+		setRoundStarted(true);
+		frame = requestAnimationFrame((time) => {
+			lastTime = time;
+			tick(time);
+		});
+	};
 
-    const updateRPC = () => {
-        const updatedRPC = RPC().map(rpc => {
-            let newVX = rpc.vx;
-            let newVY = rpc.vy;
+	function pause() {
+		cancelAnimationFrame(frame);
+		setRunning(false);
+	}
 
-            // Boundary Collision
-            if (rpc.x < 0 || rpc.x >= getBoundWidth() - 30) {
-                newVX = -rpc.vx;
-                rpc.x = rpc.x < 0 ? 0 : getBoundWidth() - 30;  // Adjust the x position inside boundary
-            }
-            if (rpc.y < 0 || rpc.y >= getBoundHeight() - 30) {
-                newVY = -rpc.vy;
-                rpc.y = rpc.y < 0 ? 0 : getBoundHeight() - 30;  // Adjust the y position inside boundary
-            }
+	const reset = () => {
+		pause();
+		setSpeed(1);
+		newBoard();
+	};
 
+	const changeSpeed = (factor) =>
+		setSpeed((s) => Math.min(MAX_SPEED, Math.max(MIN_SPEED, factor ? s * factor : 1)));
 
-            const scaledVX = newVX * multiplier();
-            const scaledVY = newVY * multiplier();
+	const changeCount = (e) => {
+		const value = parseInt(e.currentTarget.value, 10);
+		if (Number.isNaN(value)) return;
+		if (value > MAX_COUNT) toast(`The most you can have is ${MAX_COUNT} of each.`, 'error');
+		const clamped = Math.min(MAX_COUNT, Math.max(1, value));
+		e.currentTarget.value = clamped;
+		setCount(clamped);
+		newBoard();
+	};
 
-            return {
-                ...rpc,
-                vx: newVX,  // keep the original vx unchanged
-                vy: newVY,  // keep the original vy unchanged
-                x: rpc.x + scaledVX,
-                y: rpc.y + scaledVY
-            };
+	// Clicking the board drops in a new piece of the selected type
+	const drop = (e) => {
+		if (entities.length >= MAX_ENTITIES) {
+			toast(`The board is full (${MAX_ENTITIES} pieces).`, 'error');
+			return;
+		}
+		const rect = canvas.getBoundingClientRect();
+		entities.push(createEntity(brush(), e.clientX - rect.left, e.clientY - rect.top));
+		clampToBounds(entities, size.width, size.height);
+		if (roundStarted() && bet() !== 'none') setMeddled(true);
+		const current = countTypes(entities);
+		setCounts(current);
+		// Dropping a different type onto a finished board brings it back to life
+		if (finished() && !getWinner(current)) setFinished(false);
+		recordSample();
+		draw();
+	};
 
+	onMount(() => {
+		document.title = 'RPC Simulator | Alfred Shaheen';
+		ctx = canvas.getContext('2d');
+		resize();
+		newBoard();
 
-        });
+		const observer = new ResizeObserver(resize);
+		observer.observe(wrapper);
+		onCleanup(() => observer.disconnect());
+	});
 
+	onCleanup(() => cancelAnimationFrame(frame));
 
-        for (let i = 0; i < updatedRPC.length; i++) {
-            for (let j = i + 1; j < updatedRPC.length; j++) {
-                if (updatedRPC[i].type === updatedRPC[j].type) continue;
-                if (haveCollided(updatedRPC[i], updatedRPC[j])) {
-                    // Calculate displacement needed to separate the entities
-                    const dx = updatedRPC[j].x - updatedRPC[i].x;
-                    const dy = updatedRPC[j].y - updatedRPC[i].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const overlap = 60 - distance;
+	return (
+		<section class="page rpc">
+			<h1 class="page-title">Rock Paper Scissors Simulator</h1>
 
-                    // Normalize the displacement vector
-                    const nx = dx / distance;
-                    const ny = dy / distance;
-                    // Push away entities by a fraction of the overlap to ensure they are no longer colliding but not pushed too far either
-                    const pushFactor = 0.1;  // Can be adjusted
-                    updatedRPC[i].x -= overlap * pushFactor * nx;
-                    updatedRPC[i].y -= overlap * pushFactor * ny;
-                    updatedRPC[j].x += overlap * pushFactor * nx;
-                    updatedRPC[j].y += overlap * pushFactor * ny;
+			<div class="rpc-stats">
+				<p class="rpc-legend" aria-label="On the board">
+					<For each={TYPES}>
+						{(type) => (
+							<span class="rpc-count">
+								<span class="swatch" style={{ background: COLOR[type] }} />
+								{EMOJI[type]} {LABEL[type]} <strong>{counts()[type]}</strong>
+							</span>
+						)}
+					</For>
+				</p>
+				<p>
+					<span class="rpc-stats-label">Rounds won</span>
+					<For each={TYPES}>
+						{(type) => (
+							<span class="rpc-count">
+								{LABEL[type]}: {scores()[type]}
+							</span>
+						)}
+					</For>
+				</p>
+			</div>
 
+			<div class="rpc-controls">
+				<button class="btn" onClick={() => (running() ? pause() : start())}>
+					{running() ? 'Pause' : finished() ? 'New round' : roundStarted() ? 'Resume' : 'Start'}
+				</button>
+				<button class="btn btn-ghost" onClick={reset}>
+					Reset
+				</button>
 
-                    // Reflect velocities based on the normal
-                    const dotI = updatedRPC[i].vx * nx + updatedRPC[i].vy * ny;
-                    const dotJ = updatedRPC[j].vx * nx + updatedRPC[j].vy * ny;
+				<div class="rpc-speed" role="group" aria-label="Speed">
+					<button class="btn btn-ghost" onClick={() => changeSpeed(1 / 1.5)} aria-label="Decrease speed">
+						−
+					</button>
+					<button class="btn btn-ghost rpc-speed-value" onClick={() => changeSpeed()} title="Reset speed">
+						{speed().toFixed(2).replace(/\.?0+$/, '')}×
+					</button>
+					<button class="btn btn-ghost" onClick={() => changeSpeed(1.5)} aria-label="Increase speed">
+						+
+					</button>
+				</div>
 
-                    updatedRPC[i].vx -= 2 * dotI * nx;
-                    updatedRPC[i].vy -= 2 * dotI * ny;
-                    updatedRPC[j].vx -= 2 * dotJ * nx;
-                    updatedRPC[j].vy -= 2 * dotJ * ny;
+				<label class="rpc-count-input">
+					Count per type
+					<input
+						type="number"
+						min="1"
+						max={MAX_COUNT}
+						value={count()}
+						disabled={running()}
+						onChange={changeCount}
+					/>
+				</label>
+			</div>
 
-                    const winnerType = resolveCollision(updatedRPC[i].type, updatedRPC[j].type);
-                    updatedRPC[i].type = winnerType;
-                    updatedRPC[j].type = winnerType;
-                }
-            }
-        }
+			<div class="rpc-controls rpc-fun">
+				<div class="rpc-control-group">
+					<span class="rpc-stats-label">Your pick</span>
+					<Segmented label="Bet on a winner" options={BET_OPTIONS} value={bet()} onChange={setBet} disabled={roundStarted()} />
+					<Show when={bet() !== 'none'}>
+						<span class="rpc-streak" title={`Best streak: ${bestStreak()}`}>
+							🔥 {streak()}
+						</span>
+					</Show>
+				</div>
+				<div class="rpc-control-group">
+					<span class="rpc-stats-label">Click to drop</span>
+					<Segmented label="Piece to drop" options={BRUSH_OPTIONS} value={brush()} onChange={setBrush} />
+				</div>
+			</div>
 
-        setRPC(updatedRPC);
-        frameId = requestAnimationFrame(updateRPC); // Continue the update loop
-    };
+			<div class="rpc-board" ref={wrapper}>
+				<canvas
+					ref={canvas}
+					role="img"
+					aria-label={`Simulation: ${counts().rock} rocks, ${counts().paper} papers, ${counts().scissors} scissors`}
+					onPointerDown={drop}
+				/>
+			</div>
 
-
-    const startSim = () => {
-        if (simEnded()) return;
-        setSimEnded(false);
-        cancelAnimationFrame(frameId);  // Cancel any previous animation frame requests
-        frameId = requestAnimationFrame(updateRPC);
-        setDisabled(false);
-    };
-
-    const temporaryStopSim = () => {
-        cancelAnimationFrame(frameId);
-        setDisabled(false);
-    };
-
-
-
-    onCleanup(() => {
-        cancelAnimationFrame(frameId);
-    });
-
-    const resetGame = () => {
-        setRPC(createRPC());
-        setDisabled(true);
-        setSimEnded(false);
-        setNumberOfRPC(RPC_AMOUNT);
-        setMultiplier(1);
-        cancelAnimationFrame(frameId); // Stop the update loop
-    };
-
-    const increaseSpeedHandler = () => setMultiplier(multiplier() * 1.5);
-    const decreaseSpeedHandler = () => setMultiplier(multiplier() / 1.5);
-    const resetSppedHandler = () => setMultiplier(1);
-
-    //Check Winner
-    createEffect(() => {
-        if (simEnded() || disabled()) return;
-
-        let rockCount = 0, paperCount = 0, scissorsCount = 0;
-        RPC().forEach(rpc => {
-            if (rpc.type === 'rock') rockCount++;
-            else if (rpc.type === 'paper') paperCount++;
-            else if (rpc.type === 'scissors') scissorsCount++;
-        });
-
-        if (rockCount === 0 && paperCount === 0 && scissorsCount > 0) {
-            Toastify({
-
-                text: "Scissors Wins",
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                },
-                duration: 3000
-
-            }).showToast();
-            setWinners(prev => ({ ...prev, scissors: prev.scissors + 1 }));
-            setSimEnded(true);
-            setDisabled(true);
-        } else if (rockCount === 0 && scissorsCount === 0 && paperCount > 0) {
-            Toastify({
-
-                text: "Paper Wins",
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                },
-                duration: 3000
-
-            }).showToast();
-            setWinners(prev => ({ ...prev, paper: prev.paper + 1 }));
-            setSimEnded(true);
-            setDisabled(true);
-        } else if (paperCount === 0 && scissorsCount === 0 && rockCount > 0) {
-            Toastify({
-
-                text: "Rock Wins",
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                },
-                duration: 3000
-
-            }).showToast();
-            setWinners(prev => ({ ...prev, rock: prev.rock + 1 }));
-            setSimEnded(true);
-            setDisabled(true);
-        }
-    });
-
-
-    createEffect(() => {
-        setRPC(createRPC());
-    });
-
-    const noRPCOver = (e) => {
-        if (simEnded()) return;
-        const val = parseInt(e.target.value, 10);
-        if (val > 100) {
-            Toastify({
-                text: "Max number of entities is 100",
-                duration: 3000,
-                gravity: "top",
-                position: "center",
-                style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                },
-            }).showToast();
-            setNumberOfRPC(100);
-        } else if (val < 1) {
-            setNumberOfRPC(1);
-        } else {
-            setNumberOfRPC(val);
-        }
-    };
-
-    return (
-        <>
-            <FoundMessageContainer />
-            <div class="rpc-sim">
-                <div class="stats">
-                    <p>Rock: {winners().rock} Paper: {winners().paper} Scissors: {winners().scissors} </p>
-                </div>
-                <div class="buttons">
-                    <button onClick={startSim}> Start </button>
-                    <button onClick={temporaryStopSim}> Stop </button>
-                    <button onClick={resetGame}>Reset</button >
-                    <button onClick={resetSppedHandler}>Reset Speed</button>
-                    <button onClick={increaseSpeedHandler}>Increase Speed</button>
-                    <button onClick={decreaseSpeedHandler}>Decrease Speed</button>
-                    <label>Count per Type:{" "}
-                        <input
-                            type="number"
-                            value={numberOfRPC()}
-                            min="1"
-                            max="100"
-                            onInput={(e) => noRPCOver(e)}
-
-                        />
-                    </label>
-                </div>
-                <div class="border">
-                    {RPC().map(rpc => (
-                        <div
-                            class="rpc"
-                            style={{
-                                left: `${rpc.x}px`,
-                                top: `${rpc.y}px`
-                            }}
-                        >{rpc.type === 'rock' ? '🪨' : rpc.type === 'paper' ? '🧻' : '✂️'}</div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
+			<div class="rpc-chart-wrap">
+				<PopulationChart samples={() => samples} version={samplesVersion} />
+			</div>
+		</section>
+	);
 }
 
 export default Rpc;

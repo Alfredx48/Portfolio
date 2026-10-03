@@ -1,0 +1,256 @@
+.memory-game {
+	--mg-orange: #ffa200;
+	--mg-card: #202426;
+	--mg-shadow: 1px 1px 13px rgba(3, 3, 3, 0.56);
+	--mg-flip: 200ms;
+	gap: 1rem;
+}
+
+.mg-title {
+	color: #f66936;
+}
+
+.mg-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.mg-stats {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 0;
+}
+
+.mg-stats div {
+	min-width: 5.5rem;
+	padding: 0.35rem 0.8rem;
+	border-radius: var(--radius);
+	background: var(--mg-card);
+	box-shadow: var(--mg-shadow);
+	text-align: center;
+}
+
+.mg-stats dt {
+	color: var(--text-muted);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.mg-stats dd {
+	margin: 0;
+	color: var(--mg-orange);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.mg-stats dd.hot {
+	color: #fde047;
+	text-shadow: 0 0 12px rgba(253, 224, 71, 0.6);
+}
+
+/* Wide enough for the level's columns, but short enough that every row fits on screen */
+.mg-board {
+	position: relative;
+	width: min(100%, calc(var(--cols) * 8.5rem), calc((100vh - 21rem) * var(--cols) / var(--rows)));
+	min-width: min(100%, 20rem);
+}
+
+.mg-grid {
+	display: grid;
+	grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+	gap: 0.8rem;
+}
+
+.mg-card {
+	position: relative;
+	aspect-ratio: 1;
+	padding: 0;
+	border: 0;
+	background: none;
+	animation: mg-enter 500ms ease backwards;
+	perspective: 800px;
+}
+
+/* Stagger the deal a little */
+.mg-card:nth-child(3n + 1) {
+	animation-delay: 40ms;
+}
+
+.mg-card:nth-child(3n + 2) {
+	animation-delay: 80ms;
+}
+
+/* Both sides are stacked; flipping turns one edge-on while the other turns in */
+.mg-face,
+.mg-back {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	padding: 12%;
+	object-fit: contain;
+	border-radius: 0.75rem;
+	background: var(--mg-card);
+	box-shadow: var(--mg-shadow);
+	transition: transform var(--mg-flip) ease-in;
+}
+
+.mg-back {
+	padding: 0;
+	object-fit: cover;
+	transition-delay: var(--mg-flip);
+}
+
+.mg-face {
+	transform: rotateY(90deg);
+}
+
+.mg-card.face-up .mg-face {
+	transform: rotateY(0deg);
+	transition-delay: var(--mg-flip);
+}
+
+.mg-card.face-up .mg-back {
+	transform: rotateY(90deg);
+	transition-delay: 0s;
+}
+
+.mg-card.matched .mg-face {
+	box-shadow: 0 0 0 2px var(--mg-orange), var(--mg-shadow);
+	animation: mg-match 0.5s ease var(--mg-flip);
+}
+
+.mg-card.face-up {
+	cursor: default;
+}
+
+.mg-card:not(.face-up):hover .mg-back {
+	filter: brightness(1.15);
+}
+
+.mg-combo {
+	position: absolute;
+	top: 40%;
+	left: 50%;
+	z-index: 2;
+	color: #fde047;
+	font-size: clamp(2rem, 6vw, 3.5rem);
+	font-weight: 800;
+	text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 18px rgba(253, 224, 71, 0.5);
+	white-space: nowrap;
+	pointer-events: none;
+	animation: mg-combo 0.9s ease-out forwards;
+}
+
+.mg-overlay {
+	position: absolute;
+	inset: -0.5rem;
+	z-index: 3;
+	display: grid;
+	place-items: center;
+	border-radius: 1rem;
+	background: rgba(15, 20, 32, 0.6);
+	backdrop-filter: blur(3px);
+	animation: mg-fade 0.3s ease;
+}
+
+.mg-result {
+	padding: 1.5rem 2rem;
+	border: 1px solid var(--border);
+	border-radius: 1rem;
+	background: var(--bg-sunken);
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+	text-align: center;
+	animation: mg-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mg-result-title {
+	font-size: 1.6rem;
+	font-weight: 800;
+}
+
+.mg-stars {
+	margin: 0.4rem 0;
+	color: #475569;
+	font-size: 2.25rem;
+	letter-spacing: 0.15em;
+}
+
+.mg-stars .lit {
+	color: #fde047;
+	text-shadow: 0 0 14px rgba(253, 224, 71, 0.5);
+}
+
+.mg-new-best {
+	margin-left: 0.35rem;
+	padding: 0.05rem 0.4rem;
+	border-radius: 999px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.mg-result-actions {
+	display: flex;
+	justify-content: center;
+	gap: 0.75rem;
+	margin-top: 1.25rem;
+}
+
+@keyframes mg-enter {
+	from {
+		opacity: 0;
+		transform: scale(0.5);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes mg-match {
+	50% {
+		transform: scale(1.08);
+	}
+}
+
+@keyframes mg-combo {
+	from {
+		opacity: 0;
+		transform: translate(-50%, 20%) scale(0.6);
+	}
+	25% {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1.1);
+	}
+	to {
+		opacity: 0;
+		transform: translate(-50%, -140%) scale(1);
+	}
+}
+
+@keyframes mg-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (max-width: 720px) {
+	.mg-board {
+		width: 100%;
+	}
+
+	.mg-grid {
+		grid-template-columns: repeat(var(--cols-narrow), minmax(0, 1fr));
+		gap: 0.6rem;
+	}
+}

@@ -1,23 +1,11 @@
-import { onMount, onCleanup } from "solid-js";
-import MyLogo from "/src/assets/my-logo1.png"
+import logo from '../assets/logo.webp';
+import './shell.css';
+
+// Only a visit that lands on the home page gets the intro animation
+const playIntro = window.location.pathname === '/';
 
 function Logo() {
-    let logo;
-    
-    const startAnimation = () => {
-        logo.style.animationPlayState = 'running';
-    }
-
-    onMount(() => {
-        const timer = setTimeout(startAnimation,1000);
-        onCleanup(() => clearTimeout(timer));
-    });
-
-    return (
-        <div id="logo" ref={el => (logo = el)}>
-            <img id="img-logo" src={MyLogo} alt="logo"  />
-        </div>
-    );
+	return <img class="logo" classList={{ "logo-animated": playIntro }} src={logo} alt="" width="64" height="64" />;
 }
 
 export default Logo;

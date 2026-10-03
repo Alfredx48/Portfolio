@@ -1,62 +1,206 @@
-/* styles.css */
-
-.rpc-sim {
-	margin-top: 10vh;
-}
-input {
-	text-align: center;
-}
-
-.buttons {
-	display: flex;
-	justify-content: space-between;
-	margin: auto;
-	margin-bottom: 5%;
-	gap: 5%;
-	text-align: center;
-}
-.border {
-	position: relative;
-	width: 800px;
-	height: 600px;
-	border: 1px solid black;
-}
-
 .rpc {
-    /* background-color: black; */
-	position: absolute;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: xx-large;
+	--rpc-width: min(800px, 100%);
 }
-/* 
-  .rock {
-  background-color: gray;
-  }
-  
-  .paper {
-  background-color: white;
-  border: 1px solid black;
-  }
-  
-  .scissors {
-  background-color: red;
-  } */
-@media (max-width: 768px) {
-	/* Change this value based on when you want the design to adjust */
-	body {
-		padding: 0.5rem;
-	}
-	.rpc-sim {
-		margin-top: 5vh;
-	}
-	.border {
-		width: 400px; /* Reduced width */
-		height: 500px; /* Reduced height */
-		margin: auto;
-	}
+
+.rpc .page-title {
+	text-align: center;
+}
+
+.rpc-stats {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem 2.5rem;
+	color: var(--text-muted);
+}
+
+.rpc-stats p {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.4rem 1rem;
+}
+
+.rpc-stats-label {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.rpc-count {
+	color: var(--text);
+	font-variant-numeric: tabular-nums;
+}
+
+.rpc-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	width: var(--rpc-width);
+}
+
+.rpc-controls .btn {
+	min-width: 6rem;
+}
+
+.rpc-speed {
+	display: flex;
+}
+
+.rpc-speed .btn {
+	min-width: 2.75rem;
+	padding-inline: 0.75rem;
+	border-radius: 0;
+}
+
+.rpc-speed .btn:first-child {
+	border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.rpc-speed .btn:last-child {
+	border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.rpc-speed .btn + .btn {
+	margin-left: -1px;
+}
+
+.rpc-speed-value {
+	min-width: 4rem !important;
+	font-variant-numeric: tabular-nums;
+}
+
+.rpc-count-input {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+.rpc-count-input input {
+	width: 4.5rem;
+	padding: 0.55rem 0.5rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+	text-align: center;
+}
+
+.rpc-count-input input:disabled {
+	opacity: 0.5;
+}
+
+.rpc-board {
+	width: var(--rpc-width);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+	overflow: hidden;
+}
+
+.rpc-board canvas {
+	display: block;
+	width: 100%;
+}
+
+.rpc-legend strong {
+	font-variant-numeric: tabular-nums;
+}
+
+.swatch {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 0.4rem;
+	border-radius: 3px;
+	vertical-align: baseline;
+}
+
+.rpc-fun {
+	gap: 0.75rem 1.5rem;
+}
+
+.rpc-control-group {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.6rem;
+}
+
+.rpc-streak {
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.rpc-board canvas {
+	cursor: crosshair;
+	touch-action: manipulation;
+}
+
+/* ---------- Population chart ---------- */
+.rpc-chart-wrap {
+	width: var(--rpc-width);
+}
+
+.rpc-chart {
+	margin: 0;
+	padding: 0.75rem 0.75rem 0.25rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+}
+
+.rpc-chart-title {
+	margin-bottom: 0.25rem;
+	color: var(--text-muted);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.rpc-chart-plot {
+	position: relative;
+}
+
+.rpc-chart-plot canvas {
+	display: block;
+	width: 100%;
+	cursor: crosshair;
+}
+
+.rpc-chart-tooltip {
+	position: absolute;
+	bottom: calc(100% - 0.5rem);
+	z-index: 2;
+	min-width: 8.5rem;
+	padding: 0.45rem 0.65rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: rgba(15, 20, 32, 0.95);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+	font-size: 0.8rem;
+	pointer-events: none;
+	transform: translateX(-50%);
+}
+
+.rpc-chart-tooltip p {
+	display: flex;
+	align-items: center;
+	gap: 0.1rem;
+}
+
+.rpc-chart-tooltip strong {
+	margin-left: auto;
+	padding-left: 0.75rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.rpc-chart-tooltip-time {
+	color: var(--text-muted);
 }

@@ -1,27 +1,27 @@
 /* @refresh reload */
 import { render } from 'solid-js/web';
-import { Router } from '@solidjs/router';
+import { Router, Route } from '@solidjs/router';
+import { lazy } from 'solid-js';
 import './index.css';
 import App from './App';
+import HomePage from './components/home/HomePage';
+import NotFound from './components/NotFound';
 
-window.onunload = function () { window.scrollTo(0, 0) };
+const Contact = lazy(() => import('./components/contact/Contact'));
+const TicTacToe = lazy(() => import('./components/tictactoe/TicTacToe'));
+const MemoryGame = lazy(() => import('./components/memory-game/MemoryGame'));
+const Rpc = lazy(() => import('./components/rpc-simulator/Rpc'));
 
-const root = document.getElementById('root');
-
-
-if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
-  throw new Error(
-    'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got misspelled?',
-  );
-}
-
-
-render(() => (
-  <>
-    <Router >
-      <App />
-    </Router>
-  </>
-),
-  root
+render(
+	() => (
+		<Router root={App}>
+			<Route path="/" component={HomePage} />
+			<Route path="/contact" component={Contact} />
+			<Route path="/tictactoe" component={TicTacToe} />
+			<Route path="/memory-game" component={MemoryGame} />
+			<Route path="/rpc-simulator" component={Rpc} />
+			<Route path="*" component={NotFound} />
+		</Router>
+	),
+	document.getElementById('root'),
 );

@@ -1,0 +1,148 @@
+/* ---------- Logo (home link) ---------- */
+.logo-link {
+	position: absolute;
+	top: 16px;
+	left: 16px;
+	z-index: 50;
+	border-radius: 22%;
+}
+
+.logo {
+	width: 64px;
+	height: 64px;
+	border-radius: 22%;
+}
+
+/* On the home page it starts large in the middle of the screen, then tucks into the corner */
+.logo.logo-animated {
+	animation: logo-intro 1.4s cubic-bezier(0.5, -0.55, 0.3, 1) 0.8s both;
+}
+
+.logo-link:hover .logo {
+	box-shadow: 0 0 0 2px var(--accent);
+}
+
+@keyframes logo-intro {
+	from {
+		transform: translate(calc(50vw - 48px), calc(50vh - 48px)) scale(4);
+	}
+	to {
+		transform: none;
+	}
+}
+
+@media (max-width: 1024px) {
+	.logo,
+	.logo.logo-animated {
+		width: 44px;
+		height: 44px;
+		animation: none;
+	}
+}
+
+/* ---------- "You found a hidden game" message ---------- */
+.found-message {
+	position: fixed;
+	top: 1rem;
+	right: 1rem;
+	z-index: 60;
+	max-width: 300px;
+	padding: 1rem 1.25rem 1.1rem;
+	border: 1px solid var(--border);
+	border-left: 3px solid var(--accent);
+	border-radius: var(--radius);
+	background: rgba(15, 20, 32, 0.94);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+	animation: slide-in 0.5s ease;
+}
+
+.found-eyebrow {
+	color: var(--danger);
+	font-size: 0.8rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.found-title {
+	margin: 0.25rem 0 0.4rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.found-hint {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+.found-close {
+	position: absolute;
+	top: 0.6rem;
+	right: 0.6rem;
+	display: grid;
+	place-items: center;
+	padding: 0.25rem;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+	color: var(--text-muted);
+}
+
+.found-close:hover {
+	color: var(--danger);
+}
+
+.found-tab {
+	position: fixed;
+	top: 1rem;
+	right: 1rem;
+	z-index: 60;
+	padding: 0.45rem 0.9rem;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: rgba(15, 20, 32, 0.85);
+	font-size: 0.85rem;
+}
+
+.found-tab:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+@keyframes slide-in {
+	from {
+		transform: translateX(110%);
+		opacity: 0;
+	}
+	to {
+		transform: none;
+		opacity: 1;
+	}
+}
+
+@media (max-width: 640px) {
+	.found-message {
+		left: 1rem;
+		max-width: none;
+	}
+}
+
+.found-progress {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	margin-top: 0.75rem;
+	padding-top: 0.6rem;
+	border-top: 1px solid var(--border);
+	font-size: 0.85rem;
+}
+
+.found-progress strong {
+	color: var(--accent);
+}
+
+.found-tease {
+	color: var(--text-muted);
+	font-style: italic;
+}

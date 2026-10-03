@@ -1,0 +1,252 @@
+/* ---------- Shared modal overlay ---------- */
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 90;
+	display: flex;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 12vh 1rem 1rem;
+	background: rgba(10, 14, 24, 0.6);
+	backdrop-filter: blur(4px);
+	animation: overlay-in 0.15s ease;
+}
+
+@keyframes overlay-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes panel-in {
+	from {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.98);
+	}
+}
+
+kbd {
+	display: inline-block;
+	min-width: 1.4em;
+	padding: 0.05rem 0.35rem;
+	border: 1px solid var(--border);
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	background: var(--bg);
+	font-family: inherit;
+	font-size: 0.75rem;
+	text-align: center;
+}
+
+.icon-button {
+	display: grid;
+	place-items: center;
+	padding: 0.35rem;
+	border: 0;
+	border-radius: 6px;
+	background: none;
+	color: var(--text-muted);
+}
+
+.icon-button:hover {
+	background: var(--bg-raised);
+	color: var(--text);
+}
+
+/* ---------- Command palette ---------- */
+.palette {
+	width: min(36rem, 100%);
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--bg-sunken);
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+	animation: panel-in 0.18s ease;
+}
+
+.palette-input {
+	width: 100%;
+	padding: 1rem 1.15rem;
+	border: 0;
+	border-bottom: 1px solid var(--border);
+	background: none;
+	font-size: 1.05rem;
+}
+
+.palette-input:focus {
+	outline: none;
+}
+
+.palette-list {
+	max-height: min(22rem, 55vh);
+	overflow-y: auto;
+	padding: 0.4rem;
+}
+
+.palette-list li {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.6rem 0.75rem;
+	border-radius: var(--radius);
+	cursor: pointer;
+}
+
+.palette-list li.active {
+	background: var(--bg-raised);
+	box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.palette-icon {
+	width: 1.5rem;
+	text-align: center;
+}
+
+.palette-group {
+	margin-left: auto;
+	color: var(--text-muted);
+	font-size: 0.75rem;
+}
+
+.palette-empty {
+	color: var(--text-muted);
+	cursor: default !important;
+}
+
+.palette-hints {
+	display: flex;
+	gap: 1.25rem;
+	padding: 0.6rem 1rem;
+	border-top: 1px solid var(--border);
+	color: var(--text-muted);
+	font-size: 0.75rem;
+}
+
+.palette-hints kbd + kbd {
+	margin-left: 0.2rem;
+}
+
+/* ---------- Achievements ---------- */
+.trophy-button {
+	position: fixed;
+	bottom: 1rem;
+	left: 1rem;
+	z-index: 40;
+	padding: 0.45rem 0.85rem;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: rgba(15, 20, 32, 0.85);
+	backdrop-filter: blur(6px);
+	font-size: 0.85rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	transition: border-color 0.2s, transform 0.2s;
+	animation: panel-in 0.4s ease;
+}
+
+.trophy-button:hover {
+	border-color: #a78bfa;
+	transform: translateY(-2px);
+}
+
+.trophies {
+	width: min(30rem, 100%);
+	max-height: 76vh;
+	overflow-y: auto;
+	padding: 1.25rem 1.4rem;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--bg-sunken);
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+	animation: panel-in 0.18s ease;
+}
+
+.trophies-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.trophies-header h2 {
+	font-size: 1.25rem;
+}
+
+.trophies-progress {
+	height: 6px;
+	margin-top: 1rem;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--bg-raised);
+}
+
+.trophies-progress span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(to right, #6d28d9, #db2777);
+	transition: width 0.4s ease;
+}
+
+.trophies-count {
+	margin-top: 0.4rem;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+
+.trophies-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.trophies-list li {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 0.6rem 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	opacity: 0.6;
+}
+
+.trophies-list li.earned {
+	border-color: rgba(167, 139, 250, 0.45);
+	background: rgba(109, 40, 217, 0.12);
+	opacity: 1;
+}
+
+.trophy-icon {
+	font-size: 1.2rem;
+	line-height: 1.4;
+}
+
+.trophy-text {
+	display: block;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+
+.trophies-reset {
+	margin-top: 1rem;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+	text-decoration: underline;
+}
+
+.trophies-reset:hover {
+	color: var(--danger);
+}
+
+/* ---------- Confetti ---------- */
+.confetti-canvas {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
