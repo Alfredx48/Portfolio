@@ -102,7 +102,7 @@
 	margin: 0 0.15rem;
 }
 
-/* ---------- Hidden game links, revealed by the cursor spotlight ---------- */
+/* ---------- Hidden game links, revealed by the cursor (or finger) spotlight ---------- */
 .secret-links {
 	flex: 1;
 	display: flex;
@@ -116,14 +116,14 @@
 .secret-link {
 	color: transparent;
 	font-weight: 500;
-	/* Viewport-fixed gradient centred on the eased cursor position, clipped to the text */
+	/* A glow centred on the eased cursor position (in this link's coordinates, set by
+	   Blob.jsx), clipped to the text so it's invisible until the spotlight passes over */
 	background-image: radial-gradient(
-		circle 10vmax at var(--x) var(--y),
+		circle var(--spot-radius, 10vmax) at var(--sx, -100vmax) var(--sy, -100vmax),
 		#f0fffc 0%,
 		#b7f3e8 35%,
 		rgba(183, 243, 232, 0) 75%
 	);
-	background-attachment: fixed;
 	-webkit-background-clip: text;
 	background-clip: text;
 }
@@ -395,21 +395,6 @@
 		padding: 2.5rem 0;
 	}
 
-	/* No cursor to find them with, so they fade in and out on their own */
-	.secret-link {
-		background: none;
-		color: var(--accent);
-		animation: secret-pulse 7s ease-in-out infinite;
-	}
-
-	.secret-link:nth-child(2) {
-		animation-delay: 2.3s;
-	}
-
-	.secret-link:nth-child(3) {
-		animation-delay: 4.6s;
-	}
-
 	.content {
 		padding-top: 1rem;
 	}
@@ -427,10 +412,6 @@
 		padding: 1rem 1.25rem;
 		background: rgba(38, 47, 67, 0.85);
 		backdrop-filter: blur(8px);
-	}
-
-	.blob {
-		display: none;
 	}
 
 	.card {
@@ -456,14 +437,26 @@
 	}
 }
 
-@keyframes secret-pulse {
-	0%,
-	15%,
-	85%,
-	100% {
+/* ---------- Touch screens: your finger is the flashlight ---------- */
+@media (hover: none) {
+	/* Only shows while a finger is down (Blob.jsx toggles .touching) */
+	.blob {
 		opacity: 0;
+		transition: opacity 0.35s ease;
 	}
-	50% {
-		opacity: 1;
+
+	:root.touching .blob {
+		opacity: 0.45;
+	}
+
+	/* A fingertip covers more than a cursor, so the spotlight is wider */
+	.secret-link {
+		--spot-radius: 16vmax;
+	}
+
+	/* With no finger down there's no spotlight (otherwise it would sit at the screen's
+	   centre, which on a phone is right where the links are) */
+	:root:not(.touching) .secret-link {
+		background-image: none;
 	}
 }
