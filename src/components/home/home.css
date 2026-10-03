@@ -119,7 +119,7 @@
 	/* A glow centred on the eased cursor position (in this link's coordinates, set by
 	   Blob.jsx), clipped to the text so it's invisible until the spotlight passes over */
 	background-image: radial-gradient(
-		circle var(--spot-radius, 10vmax) at var(--sx, -100vmax) var(--sy, -100vmax),
+		circle 10vmax at var(--sx, -100vmax) var(--sy, -100vmax),
 		#f0fffc 0%,
 		#b7f3e8 35%,
 		rgba(183, 243, 232, 0) 75%
@@ -437,26 +437,18 @@
 	}
 }
 
-/* ---------- Touch screens: your finger is the flashlight ---------- */
+/* ---------- Touch screens: no cursor, so no blob and no hidden links ----------
+   People on phones scroll past or tap quickly, so a touch-driven reveal was either
+   missed or got in the way. The games are listed in Playground instead. */
 @media (hover: none) {
-	/* Only shows while a finger is down (Blob.jsx toggles .touching) */
-	.blob {
-		opacity: 0;
-		transition: opacity 0.35s ease;
+	.blob,
+	.secret-links,
+	.hover-only {
+		display: none;
 	}
 
-	:root.touching .blob {
-		opacity: 0.45;
-	}
-
-	/* A fingertip covers more than a cursor, so the spotlight is wider */
-	.secret-link {
-		--spot-radius: 16vmax;
-	}
-
-	/* With no finger down there's no spotlight (otherwise it would sit at the screen's
-	   centre, which on a phone is right where the links are) */
-	:root:not(.touching) .secret-link {
-		background-image: none;
+	/* The hidden links' strip used to provide this gap */
+	.socials {
+		margin-top: 2.5rem;
 	}
 }

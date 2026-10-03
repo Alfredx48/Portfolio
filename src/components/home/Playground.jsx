@@ -9,8 +9,8 @@ function Playground() {
 				Playground
 			</h2>
 			<p class="section-lede">
-				Small games built to try out ideas. They're also hidden somewhere on this page if you'd rather find
-				them yourself.
+				Small games built to try out ideas.{' '}
+				<span class="hover-only">They're also hidden somewhere on this page if you'd rather find them yourself.</span>
 			</p>
 			<div class="card-list">
 				<For each={playgroundData}>

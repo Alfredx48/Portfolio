@@ -230,6 +230,30 @@ kbd {
 	line-height: 1.4;
 }
 
+.trophy-tag {
+	display: none;
+	margin-left: 0.5rem;
+	padding: 0.05rem 0.45rem;
+	border-radius: 999px;
+	background: var(--bg-raised);
+	color: var(--text-muted);
+	font-size: 0.7rem;
+	font-weight: 600;
+	vertical-align: middle;
+}
+
+/* Only worth pointing out where it's true: phones and tablets */
+@media (hover: none) {
+	.trophy-tag {
+		display: inline-block;
+	}
+
+	/* List the ones you can earn here first */
+	.trophies-list li.computer-only {
+		order: 1;
+	}
+}
+
 .trophy-text {
 	display: block;
 	color: var(--text-muted);

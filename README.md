@@ -4,7 +4,7 @@ My personal site: who I am, the projects I've built, and a few games I made alon
 
 ## Hidden games
 
-On desktop, a glowing blob follows your cursor. Move it around the empty space in the left column and it lights up links to three hidden games. On phones your finger is the flashlight: the blob appears under it while you touch or scroll, so the links glow if your thumb passes over the empty strip below "Get in Touch". Opening one that way shows a "you found it" message. The games are also listed openly in the **Playground** section for anyone who'd rather not hunt.
+On desktop, a glowing blob follows your cursor. Move it around the empty space in the left column and it lights up links to three hidden games. Touch screens have no cursor to hunt with, so phones skip the blob and the hidden links. Opening one that way shows a "you found it" message. The games are also listed openly in the **Playground** section for anyone who'd rather not hunt.
 
 - **RPC Simulator** (`/rpc-simulator`): rocks, papers and scissors bounce around a canvas, and whatever one beats becomes its type, until only one type is left. Bet on the winner to build a streak, click the board to drop in reinforcements (dropping mid-round voids your bet), and watch a live population chart with hover tooltips. The physics (elastic collisions, overlap resolution, wall bounces) is in [`simulation.js`](src/components/rpc-simulator/simulation.js), separate from the UI so it can be unit-tested.
 - **Memory Game** (`/memory-game`): three difficulties, a timer, match combos, star ratings and saved best scores.

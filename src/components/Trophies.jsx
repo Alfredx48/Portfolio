@@ -3,7 +3,7 @@ import { ACHIEVEMENTS, resetAchievements, unlocked } from '../state/achievements
 import { setTrophiesOpen, trophiesOpen } from '../state/ui';
 import './overlays.css';
 
-// A trophy counter that appears once you've earned something, and the panel it opens.
+// A trophy counter beside the logo, and the panel it opens.
 function Trophies() {
 	let closeButton;
 	const earned = () => unlocked().size;
@@ -17,11 +17,9 @@ function Trophies() {
 
 	return (
 		<>
-			<Show when={earned() > 0}>
-				<button class="trophy-button" onClick={() => setTrophiesOpen(true)} aria-label={`Achievements: ${earned()} of ${ACHIEVEMENTS.length}`}>
-					🏆 {earned()}/{ACHIEVEMENTS.length}
-				</button>
-			</Show>
+			<button class="trophy-button" onClick={() => setTrophiesOpen(true)} aria-label={`Achievements: ${earned()} of ${ACHIEVEMENTS.length}`}>
+				🏆 {earned()}/{ACHIEVEMENTS.length}
+			</button>
 
 			<Show when={trophiesOpen()}>
 				<div class="overlay" onClick={close} onKeyDown={(e) => e.key === 'Escape' && close()}>
@@ -45,12 +43,15 @@ function Trophies() {
 						<ul class="trophies-list">
 							<For each={ACHIEVEMENTS}>
 								{(a) => (
-									<li classList={{ earned: unlocked().has(a.id) }}>
+									<li classList={{ earned: unlocked().has(a.id), 'computer-only': a.computerOnly && !unlocked().has(a.id) }}>
 										<span class="trophy-icon" aria-hidden="true">
 											{unlocked().has(a.id) ? '🏆' : '🔒'}
 										</span>
 										<span>
 											<strong>{unlocked().has(a.id) ? a.title : '???'}</strong>
+											<Show when={a.computerOnly && !unlocked().has(a.id)}>
+												<span class="trophy-tag">Computer only</span>
+											</Show>
 											<span class="trophy-text">{unlocked().has(a.id) ? a.description : a.hint}</span>
 										</span>
 									</li>
