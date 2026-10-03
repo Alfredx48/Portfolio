@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Alfred Shaheen's portfolio site, built with SolidJS and Vite.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "dev": "vite",
     "start": "vite",

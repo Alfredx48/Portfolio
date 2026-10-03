@@ -1,0 +1,4 @@
+[build.environment]
+  # Vite 8 needs Node 20.19+ and Vitest 5 needs 22.12+. Without this, Netlify uses
+  # the version pinned when the site was created, which is too old to build.
+  NODE_VERSION = "22"
