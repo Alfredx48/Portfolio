@@ -45,7 +45,7 @@ function strictLast(counts) {
 	return alive < 2 || tied ? null : TYPES[worst];
 }
 
-// A single headless game that can be advanced a few steps at a time, so the UI can spread the work across frames.
+// A single game that can be advanced a few steps at a time, so the UI can spread the work across frames or draw it.
 export function createGame({ countPerType, width, height, dt = BATCH_DT, maxTime = MAX_GAME_TIME, random = Math.random }) {
 	const entities = createEntities(countPerType, width, height, random);
 	const counts = [countPerType, countPerType, countPerType];
@@ -112,6 +112,7 @@ export function createGame({ countPerType, width, height, dt = BATCH_DT, maxTime
 	nextSample = 1;
 
 	return {
+		entities, // live, mutated in place, so the UI can draw it
 		advance(maxSteps) {
 			if (record) return record;
 			for (let n = 0; n < maxSteps; n++) {

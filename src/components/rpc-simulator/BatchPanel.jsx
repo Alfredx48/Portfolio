@@ -1,12 +1,19 @@
 import { createMemo, createSignal, For, onCleanup, Show } from 'solid-js';
 import { unlock } from '../../state/achievements';
 import { toast } from '../../utils/toast';
-import { createGame, insights, MAX_RUNS, summarize } from './batch';
-import { COLOR, EMOJI, LABEL, TYPES } from './simulation';
+import Segmented from '../ui/Segmented';
+import { BATCH_DT, createGame, insights, MAX_RUNS, summarize } from './batch';
+import { COLOR, countTypes, EMOJI, LABEL, TYPES } from './simulation';
 
 const DEFAULT_RUNS = 20;
+const DEFAULT_SPEED = 4;
 const FRAME_BUDGET = 12; // ms of simulating per animation frame
 const STEPS_PER_CALL = 50;
+const MAX_FRAME_SECONDS = 1 / 30; // avoid huge jumps after the tab was in the background
+const HOLD_MS = 700; // how long a finished game stays on the board when watching
+const MAX_HOLD_SPEED = 4; // faster than this and the pause would drag, so skip it
+
+const SPEED_OPTIONS = [1, 4, 16, 64].map((value) => ({ value, label: `${value}×` }));
 
 const seconds = (value) => (Number.isFinite(value) ? `${value.toFixed(1)}s` : '–');
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
@@ -14,19 +21,36 @@ const emoji = (type) => (type ? EMOJI[type] : '–');
 
 // Runs lots of headless games in the background and summarises who tends to win.
 // `count()` is pieces per type, `boardSize()` is { width, height }, `onStart` fires when a batch begins.
+// When watching, `drawBoard(entities)` paints each frame and `onWatchChange(state)` gets
+// { index, total, counts, holding, lastWinner }, or null when nothing is being watched.
 function BatchPanel(props) {
 	let frame = 0;
 	let records = [];
+	let reporting = false;
 
 	const [runs, setRuns] = createSignal(DEFAULT_RUNS);
 	const [running, setRunning] = createSignal(false);
 	const [progress, setProgress] = createSignal({ done: 0, total: 0 });
 	const [result, setResult] = createSignal(null); // { records, partial }
+	const [watching, setWatching] = createSignal(false);
+	const [speed, setSpeed] = createSignal(DEFAULT_SPEED);
 	const summary = createMemo(() => (result() ? summarize(result().records) : null));
+
+	const report = (state) => {
+		reporting = true;
+		props.onWatchChange?.(state);
+	};
+
+	const clearReport = () => {
+		if (!reporting) return;
+		reporting = false;
+		props.onWatchChange?.(null);
+	};
 
 	const stop = () => {
 		cancelAnimationFrame(frame);
 		setRunning(false);
+		clearReport();
 	};
 
 	// Keep whatever finished, but only if something did
@@ -52,25 +76,79 @@ function BatchPanel(props) {
 		const options = { countPerType: props.count(), width, height };
 		records = [];
 		let game = createGame(options);
+		let last = null; // time of the previous frame
+		let carry = 0; // fractional steps left over from the previous frame
+		let held = null; // { record, until } while a finished game stays on the board
 
 		setResult(null);
 		setProgress({ done: 0, total });
 		setRunning(true);
 
-		const tick = () => {
+		// True once the last game is in
+		const commit = (record) => {
+			records.push(record);
+			if (records.length === total) {
+				setResult({ records, partial: false });
+				setRunning(false);
+				clearReport();
+				if (total >= MAX_RUNS) unlock('rpc-statistician');
+				return true;
+			}
+			game = createGame(options);
+			carry = 0;
+			return false;
+		};
+
+		const headlessFrame = () => {
 			const deadline = performance.now() + FRAME_BUDGET;
 			do {
 				const record = game.advance(STEPS_PER_CALL);
-				if (!record) continue;
-				records.push(record);
-				if (records.length === total) {
-					setResult({ records, partial: false });
-					setRunning(false);
-					if (total >= MAX_RUNS) unlock('rpc-statistician');
-					return;
-				}
-				game = createGame(options);
+				if (record && commit(record)) return true;
 			} while (performance.now() < deadline);
+			return false;
+		};
+
+		const watchFrame = (time, elapsed) => {
+			if (held && time >= held.until) {
+				const { record } = held;
+				held = null;
+				if (commit(record)) return true;
+			}
+			if (!held) {
+				carry += (speed() * Math.min(elapsed, MAX_FRAME_SECONDS)) / BATCH_DT;
+				const steps = Math.floor(carry);
+				carry -= steps;
+				const record = steps > 0 ? game.advance(steps) : null;
+				if (record) {
+					if (speed() <= MAX_HOLD_SPEED) held = { record, until: time + HOLD_MS };
+					else if (commit(record)) return true;
+				}
+			}
+			props.drawBoard?.(game.entities);
+			report({
+				index: records.length + 1,
+				total,
+				counts: countTypes(game.entities),
+				holding: !!held,
+				lastWinner: held?.record.winner ?? null,
+			});
+			return false;
+		};
+
+		const tick = (time) => {
+			const elapsed = last === null ? 0 : (time - last) / 1000;
+			last = time;
+			if (watching()) {
+				if (watchFrame(time, elapsed)) return;
+			} else {
+				clearReport();
+				if (held) {
+					const { record } = held;
+					held = null;
+					if (commit(record)) return;
+				}
+				if (headlessFrame()) return;
+			}
 			setProgress({ done: records.length, total });
 			frame = requestAnimationFrame(tick);
 		};
@@ -103,6 +181,19 @@ function BatchPanel(props) {
 					<button class="btn btn-ghost" onClick={cancel}>
 						Cancel
 					</button>
+				</Show>
+			</div>
+
+			<div class="rpc-batch-controls">
+				<label class="rpc-batch-watch">
+					<input type="checkbox" checked={watching()} onChange={(e) => setWatching(e.currentTarget.checked)} />
+					Watch the games
+				</label>
+				<Show when={watching()}>
+					<div class="rpc-batch-speed">
+						<span class="rpc-stats-label">Speed</span>
+						<Segmented label="Watch speed" options={SPEED_OPTIONS} value={speed()} onChange={setSpeed} />
+					</div>
 				</Show>
 			</div>
 

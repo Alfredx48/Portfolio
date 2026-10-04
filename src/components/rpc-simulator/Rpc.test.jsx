@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@solidjs/testing-library';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Rpc from './Rpc';
 
 describe('Rpc', () => {
@@ -72,5 +72,55 @@ describe('Rpc', () => {
 
 		fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 		expect(paper).toBeDisabled();
+	});
+
+	describe('watching a batch', () => {
+		let queue;
+		const flush = (time) => {
+			const callbacks = queue;
+			queue = [];
+			callbacks.forEach((cb) => cb(time));
+		};
+
+		beforeEach(() => {
+			queue = [];
+			vi.stubGlobal('requestAnimationFrame', (cb) => queue.push(cb));
+			vi.stubGlobal('cancelAnimationFrame', () => (queue = []));
+		});
+		afterEach(() => vi.unstubAllGlobals());
+
+		it('offers a Watch the games toggle with a speed once on', () => {
+			render(() => <Rpc />);
+			expect(screen.getByLabelText('Watch the games')).not.toBeChecked();
+			expect(screen.queryByRole('radiogroup', { name: 'Watch speed' })).not.toBeInTheDocument();
+			fireEvent.click(screen.getByLabelText('Watch the games'));
+			expect(screen.getByRole('radiogroup', { name: 'Watch speed' })).toBeInTheDocument();
+		});
+
+		it('shows an overlay, locks the controls and restores them afterwards', () => {
+			render(() => <Rpc />);
+			fireEvent.click(screen.getByLabelText('Watch the games'));
+			fireEvent.click(screen.getByRole('button', { name: 'Run' }));
+			flush(0);
+			flush(100);
+
+			expect(screen.getByText(/^Simulation 1 \/ 20 · 🪨 \d+ 🧻 \d+ ✂️ \d+$/)).toBeInTheDocument();
+			expect(screen.getByRole('img', { name: /^Simulation game 1 of 20:/ })).toBeInTheDocument();
+			expect(screen.getByRole('button', { name: 'Start' })).toBeDisabled();
+			expect(screen.getByLabelText('Count per type')).toBeDisabled();
+
+			// Clicks on the board are ignored
+			const batchBoard = screen.getByRole('img', { name: /^Simulation game/ });
+			const label = batchBoard.getAttribute('aria-label');
+			fireEvent.pointerDown(batchBoard, { clientX: 100, clientY: 100 });
+			expect(batchBoard).toHaveAccessibleName(label);
+			expect(label.match(/\d+/g).reduce((a, n) => a + +n, 0)).toBe(1 + 20 + 30);
+
+			fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+			expect(screen.queryByText(/^Simulation 1 \//)).not.toBeInTheDocument();
+			expect(board()).toHaveAccessibleName('Simulation: 10 rocks, 10 papers, 10 scissors');
+			expect(screen.getByRole('button', { name: /Start|Resume/ })).toBeEnabled();
+			expect(screen.getByLabelText('Count per type')).toBeEnabled();
+		});
 	});
 });

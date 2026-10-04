@@ -45,6 +45,7 @@ const BRUSH_OPTIONS = TYPES.map((type) => ({
 function Rpc() {
 	let wrapper;
 	let canvas;
+	let batchEntities = null; // the batch game on show while watching
 	let ctx;
 	let size = { width: MAX_WIDTH, height: 600 };
 	let entities = [];
@@ -70,11 +71,32 @@ function Rpc() {
 	const [streak, setStreak] = createSignal(0);
 	const [bestStreak, setBestStreak] = createSignal(load('rpc-best-streak', 0));
 	const [brush, setBrush] = createSignal('rock');
+	const [watch, setWatch] = createSignal(null); // batch status while watching, else null
+	const shownCounts = () => watch()?.counts ?? counts();
 
-	const draw = () => {
+	const drawEntities = (list) => {
 		if (!ctx) return;
 		ctx.clearRect(0, 0, size.width, size.height);
-		for (const e of entities) ctx.fillText(EMOJI[e.type], e.x, e.y);
+		for (const e of list) ctx.fillText(EMOJI[e.type], e.x, e.y);
+	};
+
+	const draw = () => drawEntities(entities);
+
+	const drawBatch = (list) => {
+		batchEntities = list;
+		drawEntities(list);
+	};
+
+	const watchChange = (state) => {
+		const was = watch();
+		setWatch(state);
+		if (state && !was) {
+			pause();
+			wrapper.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+		} else if (!state && was) {
+			batchEntities = null;
+			draw();
+		}
 	};
 
 	const recordSample = () => {
@@ -103,7 +125,7 @@ function Rpc() {
 			ctx.fillStyle = '#e2e8f0'; // only shows if the system has no colour emoji font
 		}
 		clampToBounds(entities, width, height);
-		draw();
+		drawEntities(batchEntities ?? entities);
 	};
 
 	const newBoard = () => {
@@ -117,6 +139,19 @@ function Rpc() {
 		setMeddled(false);
 		recordSample();
 		draw();
+	};
+
+	const watchMessage = () => {
+		const { index, total, counts: c, holding, lastWinner } = watch();
+		if (!holding) return `Simulation ${index} / ${total} · ${TYPES.map((t) => `${EMOJI[t]} ${c[t]}`).join(' ')}`;
+		return lastWinner ? `${EMOJI[lastWinner]} ${LABEL[lastWinner]} wins game ${index}` : `Game ${index} ran out of time`;
+	};
+
+	const boardLabel = () => {
+		const c = shownCounts();
+		const state = watch();
+		const prefix = state ? `Simulation game ${state.index} of ${state.total}` : 'Simulation';
+		return `${prefix}: ${c.rock} rocks, ${c.paper} papers, ${c.scissors} scissors`;
 	};
 
 	const settleBet = (winner) => {
@@ -198,6 +233,7 @@ function Rpc() {
 
 	// Clicking the board drops in a new piece of the selected type
 	const drop = (e) => {
+		if (watch()) return;
 		if (entities.length >= MAX_ENTITIES) {
 			toast(`The board is full (${MAX_ENTITIES} pieces).`, 'error');
 			return;
@@ -237,7 +273,7 @@ function Rpc() {
 						{(type) => (
 							<span class="rpc-count">
 								<span class="swatch" style={{ background: COLOR[type] }} />
-								{EMOJI[type]} {LABEL[type]} <strong>{counts()[type]}</strong>
+								{EMOJI[type]} {LABEL[type]} <strong>{shownCounts()[type]}</strong>
 							</span>
 						)}
 					</For>
@@ -255,10 +291,10 @@ function Rpc() {
 			</div>
 
 			<div class="rpc-controls">
-				<button class="btn" onClick={() => (running() ? pause() : start())}>
+				<button class="btn" disabled={!!watch()} onClick={() => (running() ? pause() : start())}>
 					{running() ? 'Pause' : finished() ? 'New round' : roundStarted() ? 'Resume' : 'Start'}
 				</button>
-				<button class="btn btn-ghost" onClick={reset}>
+				<button class="btn btn-ghost" disabled={!!watch()} onClick={reset}>
 					Reset
 				</button>
 
@@ -281,7 +317,7 @@ function Rpc() {
 						min="1"
 						max={MAX_COUNT}
 						value={count()}
-						disabled={running()}
+						disabled={running() || !!watch()}
 						onChange={changeCount}
 					/>
 				</label>
@@ -307,16 +343,27 @@ function Rpc() {
 				<canvas
 					ref={canvas}
 					role="img"
-					aria-label={`Simulation: ${counts().rock} rocks, ${counts().paper} papers, ${counts().scissors} scissors`}
+					aria-label={boardLabel()}
 					onPointerDown={drop}
 				/>
+				<Show when={watch()}>
+					<p class="rpc-board-overlay" aria-hidden="true">
+						{watchMessage()}
+					</p>
+				</Show>
 			</div>
 
 			<div class="rpc-chart-wrap">
 				<PopulationChart samples={() => samples} version={samplesVersion} />
 			</div>
 
-			<BatchPanel count={count} boardSize={() => size} onStart={pause} />
+			<BatchPanel
+				count={count}
+				boardSize={() => size}
+				onStart={pause}
+				drawBoard={drawBatch}
+				onWatchChange={watchChange}
+			/>
 		</section>
 	);
 }

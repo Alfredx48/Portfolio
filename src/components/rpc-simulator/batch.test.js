@@ -94,6 +94,16 @@ describe('createGame', () => {
 		expect(finished.advance(1)).toBe(result);
 	});
 
+	it('exposes the live entities, which change as the game advances', () => {
+		const game = createGame({ ...OPTIONS, random: mulberry32(4) });
+		expect(game.entities).toHaveLength(OPTIONS.countPerType * 3);
+		const before = game.entities.map((e) => e.x);
+		const same = game.entities;
+		game.advance(5);
+		expect(game.entities).toBe(same);
+		expect(game.entities.map((e) => e.x)).not.toEqual(before);
+	});
+
 	it('returns null while the game is still running', () => {
 		const game = createGame({ ...OPTIONS, random: mulberry32(2) });
 		expect(game.advance(1)).toBeNull();
