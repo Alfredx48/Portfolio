@@ -17,6 +17,7 @@ export const ACHIEVEMENTS = [
 	{ id: 'memory-combo', title: 'On a Roll', hint: 'Match four pairs in a row in the Memory Game.', description: 'Matched four pairs in a row.' },
 	{ id: 'memory-hard', title: 'Total Recall', hint: 'Clear the Memory Game on Hard.', description: 'Cleared the Memory Game on Hard.' },
 	{ id: 'rpc-prophet', title: 'Prophet', hint: 'Call three RPC Simulator winners in a row.', description: 'Called three RPC winners in a row.' },
+	{ id: 'rpc-statistician', title: 'Statistician', hint: 'Run 100 RPC simulations in one go.', description: 'Ran 100 RPC simulations in one batch.' },
 ];
 
 export const SECRET_TOTAL = ACHIEVEMENTS.filter((a) => a.secret).length;

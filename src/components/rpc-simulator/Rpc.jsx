@@ -4,6 +4,7 @@ import { confetti } from '../../utils/confetti';
 import { load, save } from '../../utils/storage';
 import { toast } from '../../utils/toast';
 import Segmented from '../ui/Segmented';
+import BatchPanel from './BatchPanel';
 import PopulationChart from './PopulationChart';
 import {
 	clampToBounds,
@@ -314,6 +315,8 @@ function Rpc() {
 			<div class="rpc-chart-wrap">
 				<PopulationChart samples={() => samples} version={samplesVersion} />
 			</div>
+
+			<BatchPanel count={count} boardSize={() => size} onStart={pause} />
 		</section>
 	);
 }

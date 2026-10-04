@@ -57,6 +57,12 @@ describe('Rpc', () => {
 		expect(board()).toHaveAccessibleName('Simulation: 10 rocks, 10 papers, 12 scissors');
 	});
 
+	it('renders the Simulate many panel', () => {
+		render(() => <Rpc />);
+		expect(screen.getByRole('heading', { name: 'Simulate many' })).toBeInTheDocument();
+		expect(screen.getByLabelText('Simulations')).toHaveValue(20);
+	});
+
 	it('locks your bet while a round is running', () => {
 		render(() => <Rpc />);
 		const paper = screen.getByRole('radio', { name: /Paper/ });
