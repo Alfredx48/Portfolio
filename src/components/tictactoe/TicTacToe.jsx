@@ -3,11 +3,11 @@ import { unlock } from '../../state/achievements';
 import { confetti } from '../../utils/confetti';
 import { load, save } from '../../utils/storage';
 import Segmented from '../ui/Segmented';
-import { chooseMove, getOutcome, nextPlayer, other } from './logic';
+import { chooseMove, getOutcome, other } from './logic';
 import './tictactoe.css';
 
 const AI_DELAY_MS = 450; // long enough to feel like it's thinking
-const emptyBoard = () => Array(9).fill('');
+const CLEAR_DELAY_MS = 350; // matches the fade-out on the mark being cleared
 const emptyScore = { a: 0, b: 0, draws: 0 };
 
 const MODES = [
@@ -18,6 +18,10 @@ const DIFFICULTIES = [
 	{ value: 'easy', label: 'Easy' },
 	{ value: 'medium', label: 'Medium' },
 	{ value: 'impossible', label: 'Impossible' },
+];
+const RULES = [
+	{ value: 'classic', label: 'Classic', title: 'Draws end the game' },
+	{ value: 'endless', label: 'Endless', title: 'Instead of a draw, the oldest mark is cleared until someone wins' },
 ];
 const MARKS = [
 	{ value: 'X', label: 'Play X', title: 'X moves first' },
@@ -32,33 +36,53 @@ function TicTacToe() {
 	const [mode, setMode] = createSignal(saved.mode ?? 'ai');
 	const [difficulty, setDifficulty] = createSignal(saved.difficulty ?? 'medium');
 	const [human, setHuman] = createSignal(saved.human ?? 'X');
+	const [rules, setRules] = createSignal(saved.rules ?? 'classic');
 	const [scores, setScores] = createSignal(load('ttt-scores', {}));
-	const [cells, setCells] = createSignal(emptyBoard());
+	// The marks on the board, oldest first. Everything else about the game is derived from this.
+	const [moves, setMoves] = createSignal([]);
+	const [cleared, setCleared] = createSignal(0);
 	const [shake, setShake] = createSignal(false);
 	let board;
 
-	// The board is the only game state; whose turn it is and who won are derived from it.
-	// Games end as a draw as soon as nobody can win, not only when the board is full.
-	const turn = createMemo(() => nextPlayer(cells()));
-	const result = createMemo(() => getOutcome(cells()));
+	// Turns alternate from X. Endless mode clears marks, so the mark counts can't tell whose turn it is,
+	// but the newest mark always survives, so it can.
+	const turn = createMemo(() => (moves().length ? other(moves().at(-1).mark) : 'X'));
+	const cells = createMemo(() => {
+		const next = Array(9).fill('');
+		for (const { index, mark } of moves()) next[index] = mark;
+		return next;
+	});
+	// Games are drawn as soon as nobody can win, not only when the board is full.
+	const outcome = createMemo(() => getOutcome(cells(), turn()));
+	const endless = () => rules() === 'endless';
+	// In endless mode a draw doesn't end the game: the oldest mark is cleared instead (repeatedly, if need be).
+	const clearing = () => endless() && outcome() && !outcome().player;
+	const result = createMemo(() => (clearing() ? null : outcome()));
 	const vsAi = () => mode() === 'ai';
 	const aiMark = () => other(human());
-	const aiTurn = () => vsAi() && !result() && turn() === aiMark();
-	const scoreKey = () => (vsAi() ? `ai-${difficulty()}` : 'pvp');
+	const aiNext = () => vsAi() && !result() && turn() === aiMark();
+	// Unlike aiNext, false while endless mode is clearing a mark
+	const aiTurn = () => aiNext() && !outcome();
+	const scoreKey = () => `${vsAi() ? `ai-${difficulty()}` : 'pvp'}${endless() ? '-endless' : ''}`;
 	const score = () => scores()[scoreKey()] ?? emptyScore;
 
 	onMount(() => (document.title = 'TicTacToe | Alfred Shaheen'));
 
-	createEffect(() => save('ttt-settings', { mode: mode(), difficulty: difficulty(), human: human() }));
+	createEffect(() =>
+		save('ttt-settings', { mode: mode(), difficulty: difficulty(), human: human(), rules: rules() }),
+	);
 
-	const place = (index) => setCells((prev) => prev.map((cell, i) => (i === index ? turn() : cell)));
+	const place = (index) => setMoves((prev) => [...prev, { index, mark: turn() }]);
 
 	const play = (index) => {
-		if (cells()[index] || result() || aiTurn()) return;
+		if (cells()[index] || outcome() || aiTurn()) return;
 		place(index);
 	};
 
-	const newGame = () => setCells(emptyBoard());
+	const newGame = () => {
+		setMoves([]);
+		setCleared(0);
+	};
 
 	const changeSetting = (setter) => (value) => {
 		setter(value);
@@ -70,12 +94,25 @@ function TicTacToe() {
 		if (!aiTurn()) return;
 		const snapshot = cells();
 		const level = difficulty();
+		const me = turn();
 		const timer = setTimeout(() => {
-			const move = chooseMove(snapshot, level);
+			const move = chooseMove(snapshot, level, Math.random, me);
 			if (move !== null) place(move);
 		}, AI_DELAY_MS + Math.random() * 250);
 		onCleanup(() => clearTimeout(timer));
 	});
+
+	// Endless mode: fade out the oldest mark, then clear it. If it's still a draw, this runs again.
+	createEffect(() => {
+		if (!clearing()) return;
+		moves(); // rerun after each clear, even though `clearing` stays true
+		const timer = setTimeout(() => {
+			setMoves((prev) => prev.slice(1));
+			setCleared((n) => n + 1);
+		}, CLEAR_DELAY_MS);
+		onCleanup(() => clearTimeout(timer));
+	});
+	const vanishing = () => (clearing() ? moves()[0]?.index : null);
 
 	// Score the game, celebrate, and hand out achievements once it ends
 	createEffect(
@@ -132,6 +169,7 @@ function TicTacToe() {
 
 			<div class="ttt-settings">
 				<Segmented label="Opponent" options={MODES} value={mode()} onChange={changeSetting(setMode)} />
+				<Segmented label="Rules" options={RULES} value={rules()} onChange={changeSetting(setRules)} />
 				<Show when={vsAi()}>
 					<Segmented label="Your mark" options={MARKS} value={human()} onChange={changeSetting(setHuman)} />
 					<Segmented label="Difficulty" options={DIFFICULTIES} value={difficulty()} onChange={changeSetting(setDifficulty)} />
@@ -143,10 +181,20 @@ function TicTacToe() {
 					<span class="ttt-score-label">{vsAi() ? `You (${human()})` : 'X'}</span>
 					<span class="ttt-score-value">{score().a}</span>
 				</div>
-				<div class="ttt-score">
-					<span class="ttt-score-label">Draws</span>
-					<span class="ttt-score-value">{score().draws}</span>
-				</div>
+				<Show
+					when={endless()}
+					fallback={
+						<div class="ttt-score">
+							<span class="ttt-score-label">Draws</span>
+							<span class="ttt-score-value">{score().draws}</span>
+						</div>
+					}
+				>
+					<div class="ttt-score" title="Marks cleared this game to avoid a draw">
+						<span class="ttt-score-label">Cleared</span>
+						<span class="ttt-score-value">{cleared()}</span>
+					</div>
+				</Show>
 				<div classList={{ 'ttt-score': true, leading: score().b > score().a }}>
 					<span class="ttt-score-label">{vsAi() ? `AI (${aiMark()})` : 'O'}</span>
 					<span class="ttt-score-value">{score().b}</span>
@@ -161,7 +209,7 @@ function TicTacToe() {
 					<Match when={result()}>
 						<span class={`mark-${result().player}`}>{result().player}</span> wins!
 					</Match>
-					<Match when={aiTurn()}>
+					<Match when={aiNext()}>
 						<span class="ttt-thinking">AI is thinking</span>
 					</Match>
 					<Match when={vsAi()}>
@@ -185,9 +233,9 @@ function TicTacToe() {
 					<Index each={cells()}>
 						{(cell, index) => (
 							<button
-								class={`ttt-cell ${cell() ? `mark-${cell()}` : 'empty'}${result()?.line.includes(index) ? ' winning' : ''}`}
+								class={`ttt-cell ${cell() ? `mark-${cell()}` : 'empty'}${result()?.line.includes(index) ? ' winning' : ''}${vanishing() === index ? ' vanishing' : ''}`}
 								onClick={() => play(index)}
-								disabled={Boolean(cell() || result())}
+								disabled={Boolean(cell() || outcome())}
 								aria-label={`Row ${Math.floor(index / 3) + 1}, column ${(index % 3) + 1}: ${cell() || 'empty'}`}
 							>
 								{cell()}

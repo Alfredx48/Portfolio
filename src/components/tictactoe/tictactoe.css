@@ -1,6 +1,6 @@
 /* Everything has to fit on one screen, so the board takes whatever height is left
-   after the rest of the page (measured at about 22.5rem, or 27.5rem on phones where
-   the settings wrap to two rows), between 12rem and 24rem. */
+   after the rest of the page (measured at about 22.5rem, or 31rem on phones where
+   the settings wrap to three rows), between 12rem and 24rem. */
 .ttt {
 	--ttt-chrome: 23rem;
 	--ttt-size: min(24rem, 90vw, max(12rem, calc(100dvh - var(--ttt-chrome))));
@@ -34,8 +34,13 @@
 /* Narrow screens: the logo sits above the title instead of beside it */
 @media (max-width: 640px) {
 	.ttt {
-		--ttt-chrome: 28rem;
+		--ttt-chrome: 31.5rem;
 		padding-top: 4.5rem;
+	}
+
+	/* Keeps Opponent and Rules on one row on small phones */
+	.ttt-settings .segmented button {
+		padding-inline: 0.6rem;
 	}
 }
 
@@ -159,6 +164,17 @@
 @keyframes ttt-fade-in {
 	from {
 		opacity: 0.3;
+	}
+}
+
+/* Endless mode: the oldest mark quietly fading out instead of a draw */
+.ttt-cell.vanishing {
+	animation: ttt-vanish 0.35s ease-out forwards;
+}
+
+@keyframes ttt-vanish {
+	to {
+		color: transparent;
 	}
 }
 

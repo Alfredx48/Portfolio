@@ -27,14 +27,13 @@ export function getResult(cells) {
 	return cells.every(Boolean) ? { player: null, line: [] } : null;
 }
 
-// Whether any sequence of legal moves from here ends in a win for either side.
+// Whether any sequence of legal moves from here, with `player` to move, ends in a win for either side.
 // Mutates `cells` while searching but always restores it.
-function winStillPossible(cells) {
-	const player = nextPlayer(cells);
+function winStillPossible(cells, player) {
 	for (const i of emptyCells(cells)) {
 		cells[i] = player;
 		const result = getResult(cells);
-		const possible = result ? Boolean(result.player) : winStillPossible(cells);
+		const possible = result ? Boolean(result.player) : winStillPossible(cells, other(player));
 		cells[i] = '';
 		if (possible) return true;
 	}
@@ -43,14 +42,15 @@ function winStillPossible(cells) {
 
 // True when the game hasn't ended but nobody can win however it's played out,
 // e.g. every line is blocked, or the only open line needs more moves than its owner gets.
-export function isDeadDraw(cells) {
-	return !getResult(cells) && !winStillPossible([...cells]);
+// `toMove` only needs passing when marks have been cleared (endless mode), so the counts no longer tell.
+export function isDeadDraw(cells, toMove = nextPlayer(cells)) {
+	return !getResult(cells) && !winStillPossible([...cells], toMove);
 }
 
 // getResult plus early draws: { player: null, line: [], early: true } once a win is impossible.
 // (Minimax keeps using getResult; running this search at every node would be wasted work.)
-export function getOutcome(cells) {
-	return getResult(cells) ?? (isDeadDraw(cells) ? { player: null, line: [], early: true } : null);
+export function getOutcome(cells, toMove = nextPlayer(cells)) {
+	return getResult(cells) ?? (isDeadDraw(cells, toMove) ? { player: null, line: [], early: true } : null);
 }
 
 // The cell that would complete a line for `player`, if there is one.
@@ -92,9 +92,8 @@ function minimax(cells, me, toMove, depth, alpha, beta) {
 	return best;
 }
 
-// Every move that minimax rates as best for the player whose turn it is.
-export function perfectMoves(cells) {
-	const me = nextPlayer(cells);
+// Every move that minimax rates as best for `me`, the player whose turn it is.
+export function perfectMoves(cells, me = nextPlayer(cells)) {
 	const board = [...cells];
 	let bestScore = -Infinity;
 	let best = [];
@@ -120,20 +119,20 @@ export const DIFFICULTIES = ['easy', 'medium', 'impossible'];
 // medium: wins when it can and blocks your wins, but otherwise plays loosely,
 //   so it can be beaten with a fork.
 // impossible: perfect play, picking randomly between equally good moves.
-export function chooseMove(cells, difficulty = 'impossible', random = Math.random) {
+// `me` defaults to whoever's turn the mark counts say it is.
+export function chooseMove(cells, difficulty = 'impossible', random = Math.random, me = nextPlayer(cells)) {
 	const free = emptyCells(cells);
 	if (free.length === 0 || getResult(cells)) return null;
 
 	if (difficulty === 'easy') return pick(free, random);
 
 	if (difficulty === 'medium') {
-		const me = nextPlayer(cells);
 		const win = completingMove(cells, me);
 		if (win !== null) return win;
 		const block = completingMove(cells, other(me));
 		if (block !== null) return block;
-		return random() < 0.35 ? pick(perfectMoves(cells), random) : pick(free, random);
+		return random() < 0.35 ? pick(perfectMoves(cells, me), random) : pick(free, random);
 	}
 
-	return pick(perfectMoves(cells), random);
+	return pick(perfectMoves(cells, me), random);
 }

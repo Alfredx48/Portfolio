@@ -43,6 +43,13 @@ describe('early draws', () => {
 		expect(isDeadDraw(board('XO.XXOO..'))).toBe(false);
 	});
 
+	it('takes the player to move into account when the counts can’t tell', () => {
+		// X O X / O O X / O X .  The counts say X to move, and X would win in the corner,
+		// but in endless mode it can be O's turn, and then nobody can win.
+		expect(isDeadDraw(board('XOXOOXOX.'))).toBe(false);
+		expect(isDeadDraw(board('XOXOOXOX.'), 'O')).toBe(true);
+	});
+
 	it('flags early draws in getOutcome, but not full-board draws or wins', () => {
 		expect(getOutcome(board('XXOOOXX..'))).toEqual({ player: null, line: [], early: true });
 		expect(getOutcome(board('XOXXOOOXX'))).toEqual({ player: null, line: [] });
@@ -98,6 +105,13 @@ describe('chooseMove', () => {
 		const cells = board('XX.OO....');
 		expect(chooseMove(cells, 'medium')).toBe(2);
 		expect(chooseMove(cells, 'impossible')).toBe(2);
+	});
+
+	it('plays for the side it is told to', () => {
+		// The counts say X to move, but it's O's turn: O should finish the middle row, not the top one
+		const cells = board('XX.OO.X.O');
+		expect(chooseMove(cells, 'medium', Math.random, 'O')).toBe(5);
+		expect(chooseMove(cells, 'impossible', Math.random, 'O')).toBe(5);
 	});
 
 	it('blocks the opponent on medium', () => {
@@ -172,6 +186,34 @@ describe('TicTacToe', () => {
 			fireEvent.click(cell(1, 1));
 			expect(cell(1, 1)).toHaveTextContent('X');
 			expect(screen.getByText(/Turn:/)).toHaveTextContent('Turn: O');
+		});
+
+		it('clears the oldest mark instead of drawing in endless mode', () => {
+			vi.useFakeTimers();
+			fireEvent.click(screen.getByRole('radio', { name: 'Endless' }));
+			// Leaves X X O / O O X / X . . with O to move, which classic rules call a draw
+			const all = () => screen.getAllByRole('button', { name: /^Row/ });
+			for (const i of [0, 4, 1, 2, 6, 3, 5]) fireEvent.click(all()[i]);
+
+			// No announcement: the oldest mark just fades while the status carries on as normal
+			expect(screen.getByText(/Turn:/)).toHaveTextContent('Turn: O');
+			expect(all()[0]).toHaveClass('vanishing');
+			expect(all()[8]).toBeDisabled();
+			// The board isn't hatched like a finished draw
+			expect(screen.getByRole('group', { name: 'Game board' })).not.toHaveClass('dead-draw');
+
+			vi.advanceTimersByTime(1000);
+			// X's first mark is gone, and it's still O's turn
+			expect(all()[0]).toHaveTextContent('');
+			expect(screen.getByText(/Turn:/)).toHaveTextContent('Turn: O');
+			expect(screen.getByLabelText('Score')).toHaveTextContent(/Cleared\s*1/);
+
+			// O threatens the diagonal through the cleared cell; X plays elsewhere and O completes it
+			fireEvent.click(all()[0]);
+			fireEvent.click(all()[7]);
+			fireEvent.click(all()[8]);
+			expect(screen.getByText(/wins!/)).toHaveTextContent('O wins!');
+			expect(screen.getByLabelText('Score')).toHaveTextContent(/X\s*0\s*Cleared\s*1\s*O\s*1/);
 		});
 
 		it('starts over', () => {
