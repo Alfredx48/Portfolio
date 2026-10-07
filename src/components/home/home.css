@@ -452,3 +452,6 @@
 		margin-top: 2.5rem;
 	}
 }
+
+.game-card[href='/neon-ricochet'] { border-color: #6de0ec70; background: linear-gradient(115deg, #6de0ec0d, #b994ff0d), var(--bg-sunken); }
+.game-card[href='/neon-ricochet'] .game-icon { color: #6de0ec; }

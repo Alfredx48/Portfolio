@@ -1,0 +1,268 @@
+/* Shares the classic page's title, settings, scoreboard and status styles (../tictactoe.css) and only adds the
+   board. The board takes whatever height is left after the rest of the page, between 18rem and 36rem. */
+.page.uttt {
+	--uttt-chrome: 23.75rem;
+	--uttt-size: min(36rem, calc(100vw - 1rem), max(var(--uttt-min, 18rem), calc(100dvh - var(--uttt-chrome))));
+	gap: 0.7rem;
+	padding-top: 2rem;
+	padding-bottom: 1rem;
+	padding-inline: 0.5rem;
+}
+
+@media (max-width: 640px) {
+	.page.uttt {
+		--uttt-chrome: 26rem;
+		gap: 0.5rem;
+		padding-top: 4.5rem;
+		padding-bottom: 0.5rem;
+	}
+
+	/* Two lines are reserved, so a long "play in the bottom-middle board" doesn't shift the board */
+	.uttt-status {
+		min-height: 2.9rem;
+		font-size: 1.05rem;
+	}
+}
+
+.uttt-status {
+	font-size: 1.15rem;
+	text-align: center;
+}
+
+.uttt-board-wrap {
+	width: var(--uttt-size);
+}
+
+.uttt-board {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 4px;
+	padding: 4px;
+	border-radius: 12px;
+	background: #7c3aed;
+	animation: ttt-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.uttt-board[aria-busy='true'] .uttt-cell:not(:disabled) {
+	cursor: wait;
+}
+
+.uttt-sub {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 2px;
+	padding: 2px;
+	border-radius: 8px;
+	background: #33245a;
+	transition: opacity 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+/* Only the board(s) you may play in stay lit while the game runs */
+.uttt-board:not(.over) .uttt-sub:not(.active) {
+	filter: brightness(0.75);
+}
+
+.uttt-board:not(.over) .uttt-sub.claimed,
+.uttt-board:not(.over) .uttt-sub.drawn {
+	filter: brightness(0.85);
+}
+
+.uttt-sub.active {
+	background: #4a3687;
+	box-shadow: 0 0 0 2px #c4b5fd, 0 0 14px rgba(196, 181, 253, 0.55);
+	z-index: 1;
+}
+
+.uttt-cell {
+	aspect-ratio: 1;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	background: var(--bg-sunken);
+	font-size: calc(var(--uttt-size) / 22);
+	font-weight: 800;
+	line-height: 1;
+	transition: background-color 0.15s;
+}
+
+.uttt-cell.mark-X,
+.uttt-cell.mark-O {
+	animation: ttt-place 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.uttt-cell:not(:disabled):hover {
+	background: #4a3680;
+	cursor: pointer;
+}
+
+.uttt-cell:disabled {
+	cursor: default;
+}
+
+/* The most recent move, quietly */
+.uttt-cell.last {
+	box-shadow: inset 0 0 0 2px rgba(250, 204, 21, 0.75);
+}
+
+/* A claimed board fades its cells and shows the winner's mark over them */
+.uttt-sub.claimed .uttt-cell {
+	opacity: 0.25;
+}
+
+.uttt-sub.claimed .uttt-cell.last {
+	opacity: 0.6;
+}
+
+.uttt-sub.drawn .uttt-cell {
+	opacity: 0.4;
+}
+
+.uttt-claim.uttt-draw {
+	color: var(--text-muted);
+	opacity: 0.7;
+}
+
+/* Read out by screen readers, not shown */
+.uttt-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.uttt-claim {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-size: calc(var(--uttt-size) / 4);
+	font-weight: 800;
+	line-height: 1;
+	pointer-events: none;
+	animation: ttt-place 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.uttt-sub.won-X {
+	background: #4c2a85;
+}
+
+.uttt-sub.won-O {
+	background: #115e59;
+}
+
+/* Game over: boards outside the winning line step back */
+.uttt-board.over .uttt-sub:not(.winning) {
+	filter: brightness(0.7);
+}
+
+.uttt-actions {
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+}
+
+.uttt-foot {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 0.4rem 1.5rem;
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+.uttt-help summary {
+	cursor: pointer;
+}
+
+.uttt-help summary:hover {
+	color: var(--text);
+}
+
+.uttt-help p {
+	max-width: 26rem;
+	margin-top: 0.5rem;
+	text-align: left;
+	line-height: 1.5;
+}
+
+/* Short screens (phones with their browser bars showing): the board gives up some size and the rest of the page
+   tightens up, so the board still fits with the largest cells possible */
+@media (max-height: 760px) and (max-width: 640px) {
+	.page.uttt {
+		--uttt-min: 12rem;
+		--uttt-chrome: 21.5rem;
+		gap: 0.35rem;
+		padding-top: 3.6rem;
+		padding-bottom: 0.35rem;
+	}
+
+	.page.uttt .ttt-title {
+		font-size: 1.7rem;
+	}
+
+	.page.uttt .ttt-settings {
+		gap: 0.35rem;
+	}
+
+	.page.uttt .segmented button {
+		padding-block: 0.25rem;
+	}
+
+	.page.uttt .ttt-score {
+		padding-block: 0.1rem;
+	}
+
+	.page.uttt .ttt-score-value {
+		font-size: 1.1rem;
+		line-height: 1.15;
+	}
+
+	.page.uttt .uttt-status {
+		min-height: 1.5rem;
+		font-size: 0.9rem;
+	}
+
+	.page.uttt .btn {
+		padding-block: 0.45rem;
+	}
+
+	.page.uttt .btn.sound-toggle {
+		width: 2.4rem;
+		height: 2.4rem;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.uttt-board,
+	.uttt-cell,
+	.uttt-claim.uttt-draw {
+	color: var(--text-muted);
+	opacity: 0.7;
+}
+
+/* Read out by screen readers, not shown */
+.uttt-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.uttt-claim {
+		animation: none;
+	}
+}
+
+.uttt-preview-note { min-height: 2.5em; max-width: 32rem; padding-inline: 0.5rem; color: var(--text-muted); text-align: center; font-size: 0.8rem; }
+.uttt-board:not(.over) .uttt-sub.preview-target { outline: 3px dashed #facc15; outline-offset: -3px; filter: none; z-index: 2; }
+
+.uttt-wildcard-tools { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem 0.9rem; max-width: 34rem; }
+.uttt-wildcard-tools p { flex: 1 1 16rem; color: var(--text-muted); text-align: center; font-size: 0.75rem; }
+.uttt-wildcard-tools button[aria-pressed='true'] { border-color: #facc15; color: #fde68a; background: #facc151a; }

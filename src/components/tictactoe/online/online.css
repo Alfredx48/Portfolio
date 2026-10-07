@@ -1,0 +1,136 @@
+/* Measured height of everything but the board: title, score, status lines, actions and footer */
+.ttt.ttto {
+	--ttt-chrome: 26.5rem;
+}
+
+@media (max-width: 640px) {
+	.ttt.ttto {
+		--ttt-chrome: 28.5rem;
+	}
+}
+
+.ttto-panel {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.9rem;
+	width: min(28rem, 100%);
+	padding: 1.5rem 1.25rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+	text-align: center;
+}
+
+.ttto-heading {
+	font-size: 1.3rem;
+}
+
+.ttto-text {
+	color: var(--text-muted);
+	overflow-wrap: anywhere;
+}
+
+.ttto-share {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem;
+	width: 100%;
+}
+
+.ttto-link {
+	flex: 1 1 14rem;
+	min-width: 0;
+	padding: 0.7rem 0.8rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg);
+	font-size: 0.9rem;
+}
+
+.ttto-code-label {
+	color: var(--text-muted);
+	font-size: 0.8rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.ttto-code {
+	margin-top: -0.6rem;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 2.5rem;
+	font-weight: 700;
+	letter-spacing: 0.2em;
+	text-indent: 0.2em;
+	color: var(--accent);
+}
+
+.ttto-waiting {
+	min-height: 0;
+	font-size: 1.05rem;
+	color: var(--text-muted);
+}
+
+/* Reserves its line so the board doesn't jump when a rematch is offered */
+.ttto-note {
+	min-height: 1.4rem;
+	margin-top: -0.4rem;
+	color: var(--text-muted);
+}
+
+.ttto-privacy {
+	max-width: 24rem;
+	color: var(--text-muted);
+	font-size: 0.75rem;
+	text-align: center;
+	opacity: 0.8;
+}
+
+.ttto-join {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+	margin-top: 0.4rem;
+	padding-top: 0.9rem;
+	border-top: 1px solid var(--border);
+}
+
+.ttto-join .ttto-share {
+	flex-wrap: nowrap;
+	max-width: 18rem;
+}
+
+.ttto-join-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	letter-spacing: 0.08em;
+}
+
+.ttto-join-error {
+	color: #fca5a5;
+	font-size: 0.85rem;
+}
+
+.ttto-latest { box-shadow: inset 0 0 0 2px var(--accent); }
+.ttto-move-log { width: min(30rem, 100%); padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-sunken); }
+.ttto-move-log summary { min-height: 32px; cursor: pointer; color: var(--accent); }
+.ttto-move-log ol { padding-left: 1.3rem; margin-top: 0.4rem; }
+.ttto-move-log li { padding: 0.4rem 0.25rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+.ttto-move-log li > span:first-child { margin-right: 0.5rem; font-weight: 800; }
+.ttto-move-log li > strong { margin-right: 0.6rem; }
+.ttto-move-log li > span:last-child { color: var(--text-muted); }
+.ttto-move-log li.latest { background: var(--accent-soft); }
+.ttto-move-log p { color: var(--text-muted); font-size: 0.85rem; }
+
+.ttto-reactions { width: min(34rem, 100%); text-align: center; padding: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-sunken); }
+.ttto-reaction-heading { font-size: 0.8rem; color: var(--accent); margin-bottom: 0.6rem; }
+.ttto-reaction-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; }
+.ttto-reaction-buttons .btn { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; font-size: 0.75rem; padding: 0.5rem 0.6rem; }
+.ttto-reaction-status { min-height: 1.5em; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.6rem; }
+.ttto-reaction-bubbles { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+.ttto-reaction-bubbles span { margin-top: 0.5rem; padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 1rem 1rem 1rem 0; font-size: 0.75rem; }
+.ttto-reaction-bubbles .mine { background: var(--accent-soft); border-radius: 1rem 1rem 0 1rem; }

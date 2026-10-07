@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@solidjs/testing-library';
+import { createSignal } from 'solid-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetAchievements, unlocked } from '../../state/achievements';
 import BatchPanel from './BatchPanel';
+import { CLASSIC, LIZARD_SPOCK } from './simulation';
 
 const state = vi.hoisted(() => ({ made: 0, delay: 0 }));
 
@@ -26,7 +28,7 @@ vi.mock('./batch', () => {
 			return { entities, advance: () => (++calls > state.delay ? record(winner) : null) };
 		}),
 		summarize: (records) => {
-			const wins = { rock: 0, paper: 0, scissors: 0 };
+			const wins = { rock: 0, paper: 0, scissors: 0, lizard: 0, spock: 0 };
 			for (const r of records) wins[r.winner]++;
 			const rate = (n) => n / records.length;
 			return {
@@ -112,6 +114,103 @@ describe('BatchPanel', () => {
 		expect(screen.getByText('Avg length')).toBeInTheDocument();
 		expect(screen.queryByText('Draws')).not.toBeInTheDocument();
 		expect(screen.getAllByRole('row')).toHaveLength(7); // header + 6 runs
+	});
+
+	describe('with rules and sandbox settings', () => {
+		const speed = { rock: 2, paper: 1, scissors: 1, lizard: 1, spock: 0.5 };
+		const run = (props) => {
+			setup(props);
+			fireEvent.change(runs(), { target: { value: '3' } });
+			fireEvent.click(screen.getByRole('button', { name: 'Run' }));
+		};
+
+		it('passes them on to every game', () => {
+			const counts = { rock: 4, paper: 5, scissors: 6, lizard: 7, spock: 8 };
+			run({ count: () => counts, rules: () => LIZARD_SPOCK, sim: () => ({ radius: 1.5, speed }), custom: () => true });
+			expect(createGame).toHaveBeenCalledWith({
+				countPerType: counts,
+				width: 400,
+				height: 300,
+				rules: LIZARD_SPOCK,
+				radius: 1.5,
+				speed,
+			});
+			flush();
+			expect(createGame).toHaveBeenCalledTimes(3);
+			expect(createGame.mock.calls.every(([options]) => options.rules === LIZARD_SPOCK && options.radius === 1.5)).toBe(true);
+		});
+
+		it('lists all five types in the results and says what they were played under', () => {
+			run({ rules: () => LIZARD_SPOCK, custom: () => true });
+			flush();
+			const bars = screen.getByRole('list', { name: 'Win share' });
+			expect(bars.querySelectorAll('li')).toHaveLength(5);
+			expect(bars).toHaveTextContent('🦎 Lizard');
+			expect(bars).toHaveTextContent('🖖 Spock');
+			expect(screen.getByText('Played with Lizard-Spock rules and custom sandbox settings.')).toBeInTheDocument();
+			expect(screen.getByText('Custom rules')).toBeInTheDocument();
+		});
+
+		it('mentions only what applied', () => {
+			run({ rules: () => LIZARD_SPOCK });
+			flush();
+			expect(screen.getByText('Played with Lizard-Spock rules.')).toBeInTheDocument();
+			expect(screen.queryByText('Custom rules')).not.toBeInTheDocument();
+		});
+
+		it('keeps the rules a batch was run under when the sandbox changes afterwards', () => {
+			let custom = true;
+			run({ custom: () => custom });
+			flush();
+			custom = false;
+			expect(screen.getByText('Played with custom sandbox settings.')).toBeInTheDocument();
+		});
+
+		it('says Classic rules when the page has since moved on to other rules', () => {
+			const [rules, setRules] = createSignal(CLASSIC);
+			run({ rules });
+			flush();
+			expect(screen.queryByText(/^Played with/)).not.toBeInTheDocument();
+
+			setRules(LIZARD_SPOCK);
+			expect(screen.getByText('Played with Classic rules.')).toBeInTheDocument();
+			expect(screen.getByRole('list', { name: 'Win share' }).querySelectorAll('li')).toHaveLength(3);
+		});
+
+		it('tells the page when a batch starts and stops', () => {
+			const onRunningChange = vi.fn();
+			vi.spyOn(performance, 'now').mockReturnValueOnce(0).mockReturnValueOnce(100).mockReturnValue(0);
+			setup({ onRunningChange });
+			expect(onRunningChange).toHaveBeenLastCalledWith(false);
+			fireEvent.change(runs(), { target: { value: '5' } });
+			fireEvent.click(screen.getByRole('button', { name: 'Run' }));
+			expect(onRunningChange).toHaveBeenLastCalledWith(true);
+			fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+			expect(onRunningChange).toHaveBeenLastCalledWith(false);
+		});
+
+		it('warns when each game has a lot of pieces, and not otherwise', () => {
+			setup({ count: () => 101 });
+			expect(screen.getByRole('note')).toHaveTextContent('303 pieces per game is a lot');
+		});
+
+		it('adds up different counts per type for the warning, using the rules in play', () => {
+			setup({ count: () => ({ rock: 100, paper: 100, scissors: 100, lizard: 100, spock: 100 }), rules: () => LIZARD_SPOCK });
+			expect(screen.getByRole('note')).toHaveTextContent('500 pieces');
+		});
+
+		it('does not warn about a normal game', () => {
+			setup({ count: () => 10 });
+			expect(screen.queryByRole('note')).not.toBeInTheDocument();
+			setup({ count: () => ({ rock: 50, paper: 50, scissors: 50, lizard: 50, spock: 50 }), rules: () => LIZARD_SPOCK });
+			expect(screen.queryAllByRole('note')).toHaveLength(0);
+		});
+
+		it('says nothing extra for a plain classic batch', () => {
+			run({});
+			flush();
+			expect(screen.queryByText(/^Played with/)).not.toBeInTheDocument();
+		});
 	});
 
 	it('clamps the number of simulations to 1-100', () => {
@@ -203,6 +302,7 @@ describe('BatchPanel', () => {
 				counts: { rock: 2, paper: 1, scissors: 1 },
 				holding: false,
 				lastWinner: null,
+				rules: CLASSIC,
 			});
 
 			flush(100);

@@ -1,9 +1,9 @@
-import { createMemo, createSignal, For, onCleanup, Show } from 'solid-js';
+import { createEffect, createMemo, createSignal, For, onCleanup, Show } from 'solid-js';
 import { unlock } from '../../state/achievements';
 import { toast } from '../../utils/toast';
 import Segmented from '../ui/Segmented';
 import { BATCH_DT, createGame, insights, MAX_RUNS, summarize } from './batch';
-import { COLOR, countTypes, EMOJI, LABEL, TYPES } from './simulation';
+import { CLASSIC, countTypes, EMOJI } from './simulation';
 
 const DEFAULT_RUNS = 20;
 const DEFAULT_SPEED = 4;
@@ -13,6 +13,8 @@ const MAX_FRAME_SECONDS = 1 / 30; // avoid huge jumps after the tab was in the b
 const HOLD_MS = 700; // how long a finished game stays on the board when watching
 const MAX_HOLD_SPEED = 4; // faster than this and the pause would drag, so skip it
 
+const LARGE_GAME = 300; // pieces per game, above which a big batch takes minutes
+
 const SPEED_OPTIONS = [1, 4, 16, 64].map((value) => ({ value, label: `${value}×` }));
 
 const seconds = (value) => (Number.isFinite(value) ? `${value.toFixed(1)}s` : '–');
@@ -20,13 +22,17 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const emoji = (type) => (type ? EMOJI[type] : '–');
 
 // Runs lots of headless games in the background and summarises who tends to win.
-// `count()` is pieces per type, `boardSize()` is { width, height }, `onStart` fires when a batch begins.
+// `count()` is pieces per type (a number, or { type: n }), `boardSize()` is { width, height }, `onStart` fires when a batch begins.
+// Optional: `rules()` (default classic), `sim()` ({ radius, speed } from the sandbox) and `custom()`,
+// true when the sandbox isn't at its defaults, so the results can say what they were played under.
 // When watching, `drawBoard(entities)` paints each frame and `onWatchChange(state)` gets
-// { index, total, counts, holding, lastWinner }, or null when nothing is being watched.
+// { index, total, counts, holding, lastWinner, rules }, or null when nothing is being watched.
+// `onRunningChange(running)` says when a batch starts and stops, so the page can lock what it must not change meanwhile.
 function BatchPanel(props) {
 	let frame = 0;
 	let records = [];
 	let reporting = false;
+	let played = { rules: CLASSIC, custom: false }; // what the batch on screen was run under
 
 	const [runs, setRuns] = createSignal(DEFAULT_RUNS);
 	const [running, setRunning] = createSignal(false);
@@ -34,7 +40,8 @@ function BatchPanel(props) {
 	const [result, setResult] = createSignal(null); // { records, partial }
 	const [watching, setWatching] = createSignal(false);
 	const [speed, setSpeed] = createSignal(DEFAULT_SPEED);
-	const summary = createMemo(() => (result() ? summarize(result().records) : null));
+	createEffect(() => props.onRunningChange?.(running()));
+	const summary = createMemo(() => (result() ? summarize(result().records, result().rules) : null));
 
 	const report = (state) => {
 		reporting = true;
@@ -56,7 +63,7 @@ function BatchPanel(props) {
 	// Keep whatever finished, but only if something did
 	const cancel = () => {
 		stop();
-		setResult(records.length ? { records: [...records], partial: true } : null);
+		setResult(records.length ? { records: [...records], partial: true, ...played } : null);
 	};
 
 	const changeRuns = (e) => {
@@ -73,7 +80,9 @@ function BatchPanel(props) {
 		stop();
 		const total = runs();
 		const { width, height } = props.boardSize();
-		const options = { countPerType: props.count(), width, height };
+		const rules = props.rules?.() ?? CLASSIC;
+		played = { rules, custom: props.custom?.() ?? false };
+		const options = { countPerType: props.count(), width, height, ...(props.rules && { rules }), ...props.sim?.() };
 		records = [];
 		let game = createGame(options);
 		let last = null; // time of the previous frame
@@ -88,7 +97,7 @@ function BatchPanel(props) {
 		const commit = (record) => {
 			records.push(record);
 			if (records.length === total) {
-				setResult({ records, partial: false });
+				setResult({ records, partial: false, ...played });
 				setRunning(false);
 				clearReport();
 				if (total >= MAX_RUNS) unlock('rpc-statistician');
@@ -128,7 +137,8 @@ function BatchPanel(props) {
 			report({
 				index: records.length + 1,
 				total,
-				counts: countTypes(game.entities),
+				counts: countTypes(game.entities, rules),
+				rules,
 				holding: !!held,
 				lastWinner: held?.record.winner ?? null,
 			});
@@ -156,6 +166,21 @@ function BatchPanel(props) {
 	};
 
 	onCleanup(stop);
+
+	// e.g. "Lizard-Spock rules and custom sandbox settings", or null for a plain classic game
+	const playedUnder = () => {
+		const { rules, custom } = result();
+		// Classic is only worth saying when the page is showing something else now
+		const showRules = rules.id !== 'classic' || (props.rules && props.rules() !== rules);
+		const parts = [showRules && `${rules.name} rules`, custom && 'custom sandbox settings'].filter(Boolean);
+		return parts.length ? parts.join(' and ') : null;
+	};
+
+	// Pieces in each game of the next batch
+	const pieces = () => {
+		const each = props.count();
+		return typeof each === 'number' ? each * (props.rules?.().types.length ?? 3) : Object.values(each).reduce((a, b) => a + b, 0);
+	};
 
 	const percent = (type) => Math.round((summary().winRate[type] || 0) * 100);
 
@@ -197,6 +222,12 @@ function BatchPanel(props) {
 				</Show>
 			</div>
 
+			<Show when={pieces() > LARGE_GAME && !running()}>
+				<p class="rpc-batch-warning" role="note">
+					{pieces()} pieces per game is a lot. Every game is slow to settle, so a batch this size can take minutes. Fewer per type gets you an answer sooner.
+				</p>
+			</Show>
+
 			<Show when={running()}>
 				<div class="rpc-batch-progress">
 					<div
@@ -223,16 +254,24 @@ function BatchPanel(props) {
 								? `Partial results: ${plural(s().runs, 'run')} finished before you cancelled.`
 								: `Results from ${plural(s().runs, 'run')}.`}
 						</p>
+						<Show when={playedUnder()}>
+							<p class="rpc-batch-note">
+								<Show when={result().custom}>
+									<span class="rpc-badge">Custom rules</span>
+								</Show>
+								Played with {playedUnder()}.
+							</p>
+						</Show>
 
 						<ul class="rpc-batch-bars" aria-label="Win share">
-							<For each={TYPES}>
+							<For each={result().rules.types}>
 								{(type) => (
 									<li classList={{ leader: s().leader === type }}>
 										<span class="rpc-batch-name">
-											{EMOJI[type]} {LABEL[type]}
+											{EMOJI[type]} {result().rules.label[type]}
 										</span>
 										<span class="rpc-batch-bar">
-											<span style={{ width: `${percent(type)}%`, background: COLOR[type] }} />
+											<span style={{ width: `${percent(type)}%`, background: result().rules.color[type] }} />
 										</span>
 										<span class="rpc-batch-value">
 											{plural(s().wins[type], 'win')} · {percent(type)}%

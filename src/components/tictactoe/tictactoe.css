@@ -113,11 +113,13 @@
 	animation: ttt-shake 0.5s ease;
 }
 
+/* --ttt-n is the board size. Gaps and corners shrink with it so the cells keep their share of the board. */
 .ttt-board {
+	--ttt-gap: calc(24px / var(--ttt-n, 3));
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 8px;
-	padding: 8px;
+	grid-template-columns: repeat(var(--ttt-n, 3), 1fr);
+	gap: var(--ttt-gap);
+	padding: var(--ttt-gap);
 	border-radius: 14px;
 	background: #7c3aed;
 	animation: ttt-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -130,9 +132,9 @@
 .ttt-cell {
 	aspect-ratio: 1;
 	border: 0;
-	border-radius: 8px;
+	border-radius: calc(24px / var(--ttt-n, 3));
 	background: var(--bg-sunken);
-	font-size: calc(var(--ttt-size) / 6);
+	font-size: calc(var(--ttt-size) / (var(--ttt-n, 3) * 2));
 	font-weight: 800;
 	line-height: 1;
 	transition: background-color 0.15s;
@@ -144,7 +146,41 @@
 }
 
 .ttt-cell:not(:disabled):hover {
-	background: #33264f;
+	background-color: #33264f;
+}
+
+/* Hints: tint empty cells by what perfect play leads to, with a glyph as well for anyone who can't tell the colours apart */
+.ttt-cell.hint-win {
+	background-image: linear-gradient(rgba(74, 222, 128, 0.24), rgba(74, 222, 128, 0.24));
+}
+
+.ttt-cell.hint-draw {
+	background-image: linear-gradient(rgba(148, 163, 184, 0.2), rgba(148, 163, 184, 0.2));
+}
+
+.ttt-cell.hint-loss {
+	background-image: linear-gradient(rgba(248, 113, 113, 0.24), rgba(248, 113, 113, 0.24));
+}
+
+.ttt-cell[class*='hint-']::after {
+	font-size: 0.45em;
+	font-weight: 700;
+	opacity: 0.75;
+}
+
+.ttt-cell.hint-win::after {
+	content: '✓';
+	color: #86efac;
+}
+
+.ttt-cell.hint-draw::after {
+	content: '=';
+	color: #cbd5e1;
+}
+
+.ttt-cell.hint-loss::after {
+	content: '!';
+	color: #fca5a5;
 }
 
 .ttt-cell:disabled {
@@ -190,6 +226,7 @@
 	pointer-events: none;
 }
 
+/* The Ultimate and Online pages draw a plain line in a 300×300 viewBox, so these are the defaults */
 .ttt-win-line line {
 	stroke-width: 10;
 	stroke-linecap: round;
@@ -197,6 +234,13 @@
 	stroke-dashoffset: 400;
 	filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.5));
 	animation: ttt-draw-line 0.45s ease-out 0.1s forwards;
+}
+
+/* This page's line has pathLength 1, so the dash maths is the same on every board size.
+   The long gap keeps the round cap hidden until it draws. */
+.ttt-win-line line[pathLength] {
+	stroke-dasharray: 1 2;
+	stroke-dashoffset: 1;
 }
 
 .stroke-X {
@@ -210,6 +254,191 @@
 .ttt-actions {
 	display: flex;
 	gap: 0.75rem;
+}
+
+/* Everything below is for this page only: the Ultimate and Online pages share the classes above */
+.ttt-classic .ttt-actions {
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.ttt-classic .ttt-actions .btn {
+	padding: 0.5rem 0.9rem;
+}
+
+.ttt-classic .ttt-actions .btn.sound-toggle {
+	width: 2.4rem;
+	height: 2.4rem;
+	padding: 0;
+}
+
+.ttt-classic .ttt-actions .btn[aria-pressed='true'] {
+	border-color: var(--accent);
+	background: var(--accent-soft);
+}
+
+/* Narrow screens show an icon for Undo, Replay and Share, so the finished-game row fits on one line */
+.ttt-classic .ttt-icon {
+	display: none;
+}
+
+.ttt-replay-step {
+	min-width: 6.5rem;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}
+
+/* Why the game won't count for achievements. Its space is always reserved so the board doesn't jump. */
+.ttt-note {
+	min-height: 1rem;
+	margin-block: -0.7rem -0.4rem;
+	line-height: 1.2;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+	text-align: center;
+}
+
+.ttt-links {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem 1.1rem;
+	font-size: 0.9rem;
+}
+
+.ttt-links a,
+.ttt-reset {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--text-muted);
+	font-size: inherit;
+	transition: color 0.2s;
+}
+
+.ttt-links a:hover,
+.ttt-reset:hover {
+	color: var(--accent);
+}
+
+/* Wide screens: the less-used settings sit in the same row as the rest, and Reset score goes last */
+.ttt-classic .ttt-more {
+	display: contents;
+}
+
+.ttt-classic .ttt-difficulty {
+	display: contents;
+}
+
+.ttt-classic .ttt-difficulty > .segmented {
+	order: 1;
+}
+
+.ttt-classic .ttt-reset {
+	order: 2;
+	font-size: 0.9rem;
+}
+
+.ttt-more-toggle {
+	display: none;
+}
+
+@media (max-width: 640px) {
+	/* Two settings rows instead of three, so the board gets its height back */
+	.ttt-classic {
+		--ttt-chrome: 30.5rem;
+	}
+
+	.ttt-classic .ttt-difficulty {
+		display: block;
+	}
+
+	.ttt-classic .ttt-difficulty > .segmented,
+	.ttt-classic .ttt-reset {
+		order: 0;
+	}
+
+	.ttt-classic .ttt-more-toggle {
+		display: inline-flex;
+		flex: 1 1 0;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		min-width: 0;
+		max-width: 13rem;
+		padding: 0.4rem 0.7rem;
+		border: 1px solid var(--border);
+		border-radius: calc(var(--radius) + 3px);
+		background: var(--bg-sunken);
+		color: var(--text-muted);
+		font-size: 0.9rem;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	/* With choices to show, they replace the label: the button's accessible name still has both */
+	.ttt-classic .ttt-more-toggle:has(.ttt-more-summary) .ttt-more-label {
+		display: none;
+	}
+
+	.ttt-more-toggle[aria-expanded='true'] {
+		border-color: var(--accent);
+		color: var(--text);
+	}
+
+	.ttt-more-summary {
+		overflow: hidden;
+		color: var(--accent);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.ttt-classic .ttt-more {
+		display: none;
+		flex-basis: 100%;
+		order: 3;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.6rem;
+	}
+
+	.ttt-classic .ttt-more.open {
+		display: flex;
+	}
+
+	.ttt-classic .ttt-actions {
+		gap: 0.35rem;
+	}
+
+	.ttt-classic .ttt-actions .btn {
+		padding-inline: 0.5rem;
+		font-size: 0.9rem;
+	}
+
+	.ttt-classic .ttt-actions .btn.sound-toggle {
+		width: 2.2rem;
+		height: 2.2rem;
+	}
+}
+
+@media (max-width: 380px) {
+	.ttt-classic .ttt-icon {
+		display: inline;
+	}
+
+	.ttt-classic .ttt-label {
+		display: none;
+	}
+
+	.ttt-classic .ttt-actions .btn:has(.ttt-icon) {
+		min-width: 2.4rem;
+		padding-inline: 0.4rem;
+	}
 }
 
 @keyframes ttt-in {
@@ -243,3 +472,15 @@
 		transform: translateX(8px);
 	}
 }
+
+/* Match series sit separately from the browser's saved totals. */
+.ttt-match-tools { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: min(38rem, 100%); }
+.ttt-match-tools label { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.65rem; color: var(--text-muted); font-size: 0.85rem; }
+.ttt-match-tools select { min-height: 40px; max-width: 100%; padding: 0.45rem 0.65rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-sunken); color: var(--text); }
+.ttt-match-progress { font-weight: 700; color: var(--accent); text-align: center; }
+.ttt-match-note { max-width: 30rem; color: var(--text-muted); font-size: 0.75rem; text-align: center; }
+
+.ttt-orbit-note { width: min(34rem, 100%); padding: 0.7rem 1rem; color: var(--text-muted); border: 1px solid #9e86cc; border-radius: var(--radius); background: #7c3aed14; font-size: 0.8rem; text-align: center; }
+.ttt-orbit-note strong { color: #c4b5fd; }
+
+.orbit-mode .ttt-board { background: linear-gradient(145deg, #7c3aed, #238d95); }

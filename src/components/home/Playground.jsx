@@ -1,6 +1,7 @@
 import { A } from '@solidjs/router';
 import { For } from 'solid-js';
 import playgroundData from '../../data/playgroundData';
+import '../games/hub-link.css';
 
 function Playground() {
 	return (
@@ -32,6 +33,14 @@ function Playground() {
 					)}
 				</For>
 			</div>
+			<p class="playground-more">
+				<A href="/games">
+					All games &amp; stats
+					<span class="arrow" aria-hidden="true">
+						→
+					</span>
+				</A>
+			</p>
 		</section>
 	);
 }

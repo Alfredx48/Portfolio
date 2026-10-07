@@ -1,0 +1,27 @@
+/* The "All games & stats" link under the home page's Playground list */
+.playground-more {
+	margin-top: 1.5rem;
+}
+
+.playground-more a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	color: var(--text);
+	font-size: 0.9rem;
+	font-weight: 600;
+	transition: color 0.2s;
+}
+
+.playground-more a:hover,
+.playground-more a:focus-visible {
+	color: var(--accent);
+}
+
+.playground-more .arrow {
+	margin: 0;
+}
+
+.playground-more a:hover .arrow {
+	transform: translateX(3px);
+}

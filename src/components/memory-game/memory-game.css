@@ -2,8 +2,13 @@
 	--mg-orange: #ffa200;
 	--mg-card: #202426;
 	--mg-shadow: 1px 1px 13px rgba(3, 3, 3, 0.56);
-	--mg-flip: 200ms;
+	--mg-flip: 450ms;
+	--mg-chrome: 21rem; /* height of everything above the board */
 	gap: 1rem;
+}
+
+.memory-game.daily {
+	--mg-chrome: 22.5rem; /* the daily pill is two lines tall */
 }
 
 .mg-title {
@@ -27,6 +32,7 @@
 }
 
 .mg-stats div {
+	position: relative;
 	min-width: 5.5rem;
 	padding: 0.35rem 0.8rem;
 	border-radius: var(--radius);
@@ -58,7 +64,7 @@
 /* Wide enough for the level's columns, but short enough that every row fits on screen */
 .mg-board {
 	position: relative;
-	width: min(100%, calc(var(--cols) * 8.5rem), calc((100vh - 21rem) * var(--cols) / var(--rows)));
+	width: min(100%, calc(var(--cols) * 8.5rem), calc((100vh - var(--mg-chrome)) * var(--cols) / var(--rows)));
 	min-width: min(100%, 20rem);
 }
 
@@ -87,7 +93,19 @@
 	animation-delay: 80ms;
 }
 
-/* Both sides are stacked; flipping turns one edge-on while the other turns in */
+/* A matched pair rises above its neighbours so its glow and sparks aren't clipped */
+.mg-card.matched {
+	z-index: 1;
+}
+
+/* The two faces share one 3D body that turns over; each hides its back while turned away */
+.mg-inner {
+	position: absolute;
+	inset: 0;
+	transform-style: preserve-3d;
+	transition: transform var(--mg-flip) cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+
 .mg-face,
 .mg-back {
 	position: absolute;
@@ -99,36 +117,72 @@
 	border-radius: 0.75rem;
 	background: var(--mg-card);
 	box-shadow: var(--mg-shadow);
-	transition: transform var(--mg-flip) ease-in;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
 }
 
 .mg-back {
 	padding: 0;
 	object-fit: cover;
-	transition-delay: var(--mg-flip);
 }
 
 .mg-face {
-	transform: rotateY(90deg);
+	transform: rotateY(180deg);
 }
 
-.mg-card.face-up .mg-face {
-	transform: rotateY(0deg);
-	transition-delay: var(--mg-flip);
+.mg-card.face-up .mg-inner {
+	transform: rotateY(180deg);
 }
 
-.mg-card.face-up .mg-back {
-	transform: rotateY(90deg);
-	transition-delay: 0s;
+/* Pulse once the flip lands. `scale` is separate from `transform`, so it doesn't fight the rotation */
+.mg-card.matched .mg-inner {
+	animation: mg-match 0.5s ease var(--mg-flip);
 }
 
 .mg-card.matched .mg-face {
-	box-shadow: 0 0 0 2px var(--mg-orange), var(--mg-shadow);
-	animation: mg-match 0.5s ease var(--mg-flip);
+	box-shadow: 0 0 0 2px var(--mg-orange), 0 0 16px rgba(255, 162, 0, 0.45), var(--mg-shadow);
+	animation: mg-glow 0.9s ease var(--mg-flip);
+}
+
+/* `translate` likewise, so a miss can shake a card that is mid-turn */
+.mg-card.miss .mg-inner {
+	animation: mg-shake 0.4s ease var(--mg-flip);
 }
 
 .mg-card.face-up {
 	cursor: default;
+}
+
+.mg-board.locked .mg-card {
+	cursor: default;
+}
+
+/* Sparks fly out from the middle of each card of a matched pair */
+.mg-burst {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+
+.mg-burst i {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 0.45rem;
+	height: 0.45rem;
+	margin: -0.225rem;
+	border-radius: 50%;
+	background: var(--mg-orange);
+	opacity: 0;
+	animation: mg-spark 0.7s ease-out var(--mg-flip) both;
+}
+
+.mg-burst i:nth-child(3n + 1) {
+	background: #fde047;
+}
+
+.mg-burst i:nth-child(3n + 2) {
+	background: var(--accent);
 }
 
 .mg-card:not(.face-up):hover .mg-back {
@@ -219,7 +273,49 @@
 
 @keyframes mg-match {
 	50% {
-		transform: scale(1.08);
+		scale: 1.1;
+	}
+}
+
+@keyframes mg-glow {
+	40% {
+		box-shadow: 0 0 0 3px #fde047, 0 0 30px 6px rgba(255, 162, 0, 0.8), var(--mg-shadow);
+	}
+}
+
+@keyframes mg-shake {
+	20%,
+	60% {
+		translate: -5px 0;
+	}
+	40%,
+	80% {
+		translate: 5px 0;
+	}
+}
+
+@keyframes mg-spark {
+	from {
+		opacity: 1;
+		transform: rotate(var(--angle)) translateX(0) scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: rotate(var(--angle)) translateX(var(--reach)) scale(0.3);
+	}
+}
+
+@keyframes mg-float {
+	from {
+		opacity: 0;
+		transform: translate(-50%, 0);
+	}
+	20% {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+		transform: translate(-50%, -1.6rem);
 	}
 }
 
@@ -244,9 +340,167 @@
 	}
 }
 
+.mg-peek-eye {
+	display: none;
+}
+
+.mg-cost {
+	color: var(--mg-orange);
+	font-size: 0.8em;
+	font-weight: 700;
+}
+
+.mg-daily {
+	padding: 0.3rem 0.85rem;
+	border: 1px solid var(--border);
+	border-radius: calc(var(--radius) + 3px);
+	background: var(--bg-sunken);
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.mg-daily p {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 0.3rem;
+	min-height: 1.6rem; /* room for the Share button, so the pill never changes height */
+	margin: 0;
+}
+
+.mg-daily strong {
+	color: var(--mg-orange);
+}
+
+.mg-streak {
+	font-weight: 700;
+}
+
+.mg-daily .mg-daily-sub {
+	min-height: 0;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+}
+
+.mg-daily-sub strong {
+	color: var(--text);
+}
+
+.mg-toolbar .mg-daily .mg-share-small {
+	padding: 0.1rem 0.6rem;
+	font-size: 0.75rem;
+}
+
+.mg-note {
+	margin-top: 0.4rem;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+
+/* "+3s" / "−1s" drifts up from the clock */
+.mg-float {
+	position: absolute;
+	top: -0.2rem;
+	left: 50%;
+	color: #f87171;
+	font-weight: 800;
+	pointer-events: none;
+	animation: mg-float 0.9s ease-out forwards;
+}
+
+.mg-float.good {
+	color: #4ade80;
+}
+
+/* Time's up: the revealed cards stay visible for a moment before the dialog fades in over them.
+   It is hidden (so unclickable) until then; the delay matches LOSS_REVEAL_MS. */
+.mg-overlay.lost {
+	background: rgba(15, 20, 32, 0.4);
+	backdrop-filter: none;
+	animation: mg-reveal 0.4s ease 1.8s backwards;
+}
+
+@keyframes mg-reveal {
+	from {
+		opacity: 0;
+		visibility: hidden;
+	}
+}
+
+/* For the live region: read out, never shown */
+.mg-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
 @media (max-width: 720px) {
+	.memory-game {
+		gap: 0.7rem;
+		--mg-chrome: 23rem;
+	}
+
+	.memory-game.daily {
+		--mg-chrome: 27rem;
+	}
+
+	/* Mode and sound share a row, then the level (or the daily pill), New game and Peek wrap
+	   onto the next, so the controls take two rows in Classic and Time Attack */
+	.mg-toolbar .sound-toggle {
+		order: 1;
+	}
+
+	.mg-toolbar > :not(.sound-toggle):not(:first-child) {
+		order: 2;
+	}
+
+	.memory-game .segmented button {
+		padding: 0.35rem 0.45rem;
+		font-size: 0.85rem;
+	}
+
+	.mg-toolbar .btn {
+		padding: 0.45rem 0.6rem;
+		font-size: 0.9rem;
+	}
+
+	.mg-toolbar {
+		gap: 0.4rem;
+	}
+
+	.mg-daily {
+		flex-basis: 100%;
+		padding: 0.25rem 0.5rem;
+		font-size: 0.85rem;
+	}
+
+	.mg-daily .mg-daily-sub {
+		font-size: 0.78rem;
+	}
+
+	.mg-stats dd {
+		font-size: 0.9rem;
+		white-space: nowrap;
+	}
+
+	.mg-stats {
+		flex-wrap: nowrap;
+		gap: 0.4rem;
+	}
+
+	.mg-stats div {
+		min-width: 0;
+		flex: 1;
+		padding: 0.3rem 0.4rem;
+	}
+
+	/* Full width unless the rows would run off the bottom of the screen */
 	.mg-board {
-		width: 100%;
+		width: min(100%, calc((100vh - var(--mg-chrome)) * var(--cols-narrow) / var(--rows-narrow)));
 	}
 
 	.mg-grid {
@@ -254,3 +508,72 @@
 		gap: 0.6rem;
 	}
 }
+
+/* On phones Peek shrinks to an eye so New game, the level and Peek share a row */
+@media (max-width: 420px) {
+	.mg-peek-word {
+		display: none;
+	}
+
+	.mg-peek-eye {
+		display: inline;
+	}
+}
+
+/* No flips, shakes or sparks: cards just fade between faces */
+@media (prefers-reduced-motion: reduce) {
+	.mg-card {
+		animation-name: mg-fade;
+	}
+
+	.mg-inner,
+	.mg-card.face-up .mg-inner {
+		transform: none;
+		transition: none;
+	}
+
+	.mg-face,
+	.mg-back {
+		backface-visibility: visible;
+		-webkit-backface-visibility: visible;
+		transition: opacity 0.2s;
+	}
+
+	.mg-face {
+		transform: none;
+		opacity: 0;
+	}
+
+	.mg-card.face-up .mg-face {
+		opacity: 1;
+	}
+
+	.mg-card.face-up .mg-back {
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
+
+	.mg-card.matched .mg-inner,
+	.mg-card.miss .mg-inner,
+	.mg-card.matched .mg-face,
+	.mg-burst i,
+	.mg-float {
+		animation: none;
+	}
+
+	.mg-burst {
+		display: none;
+	}
+
+	.mg-float {
+		opacity: 1;
+	}
+}
+
+.mg-grid.is-paused { visibility: hidden; }
+.mg-pause-note { color: var(--text-muted); font-size: 0.8rem; max-width: 32rem; text-align: center; }
+.mg-pause-overlay .mg-result { max-width: 100%; padding-inline: clamp(1rem, 4vw, 2rem); }
+.mg-pause-overlay .btn { margin-top: 1rem; }
+
+.mg-drift-note { width: min(34rem, 100%); padding: 0.7rem 1rem; color: var(--text-muted); border: 1px solid #b98348; border-radius: var(--radius); background: #ffa2000c; font-size: 0.8rem; text-align: center; }
+.mg-drift-note strong { color: #ffc371; }

@@ -43,7 +43,26 @@
 }
 
 .rpc-controls .btn {
-	min-width: 6rem;
+	min-width: 5rem;
+}
+
+/* Start, Reset, sound and Share stay together; the rest wraps around them */
+.rpc-actions {
+	gap: 0.5rem;
+}
+
+.rpc-sandbox-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.rpc-sandbox-toggle .rpc-badge {
+	margin-left: 0;
+}
+
+.rpc-controls .btn.sound-toggle {
+	min-width: 0;
 }
 
 .rpc-speed {
@@ -140,7 +159,7 @@
 }
 
 .rpc-fun {
-	gap: 0.75rem 1.5rem;
+	gap: 0.6rem 1rem;
 }
 
 .rpc-control-group {
@@ -276,6 +295,11 @@
 	align-items: center;
 	gap: 0.5rem;
 	color: var(--text-muted);
+}
+
+.rpc-batch-warning {
+	color: var(--text-muted);
+	font-size: 0.85rem;
 }
 
 .rpc-batch-progress {
@@ -452,3 +476,188 @@
 		font-size: 0.75rem;
 	}
 }
+
+/* ---------- Rules, sandbox and predictions ---------- */
+.rpc-badge {
+	display: inline-block;
+	margin-left: 0.6rem;
+	padding: 0.1rem 0.55rem;
+	border: 1px solid var(--accent);
+	border-radius: 999px;
+	color: var(--text);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	vertical-align: middle;
+}
+
+.rpc-sandbox {
+	width: var(--rpc-width);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+}
+
+.rpc-sandbox[hidden] {
+	display: none;
+}
+
+.rpc-sandbox-body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.9rem;
+	padding: 0.75rem;
+}
+
+.rpc-sandbox-grid {
+	display: grid;
+	grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
+	align-items: center;
+	gap: 0.5rem 1rem;
+}
+
+.rpc-sandbox-name {
+	color: var(--text);
+	font-size: 0.9rem;
+	white-space: nowrap;
+}
+
+.rpc-sandbox-slider,
+.rpc-sandbox-radius {
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.rpc-sandbox input[type='range'] {
+	flex: 1;
+	min-width: 0;
+	accent-color: var(--accent);
+}
+
+.rpc-sandbox input[type='range']:disabled {
+	opacity: 0.5;
+}
+
+.rpc-sandbox output {
+	min-width: 2.4rem;
+	color: var(--text);
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+.rpc-sandbox-radius {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+}
+
+.rpc-sandbox-radius small {
+	display: block;
+	font-size: 0.75rem;
+}
+
+.rpc-sandbox-foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
+	color: var(--text-muted);
+	font-size: 0.8rem;
+}
+
+.rpc-chart-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.4rem 0.75rem;
+	margin-bottom: 0.25rem;
+}
+
+.rpc-chart-header .rpc-chart-title {
+	margin-bottom: 0;
+}
+
+.rpc-predict {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.4rem 0.6rem;
+	font-size: 0.85rem;
+}
+
+.rpc-predict .btn {
+	min-height: 0;
+	padding: 0.25rem 0.7rem;
+	font-size: 0.85rem;
+}
+
+.rpc-predict-note {
+	color: var(--text-muted);
+}
+
+.rpc-predict-note strong {
+	color: var(--text);
+	font-variant-numeric: tabular-nums;
+}
+
+.rpc-chart-plot canvas.sketching {
+	cursor: crosshair;
+	touch-action: none;
+}
+
+@media (max-width: 600px) {
+	.rpc-sandbox-grid {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+
+	.rpc-sandbox-grid .rpc-sandbox-head:first-child {
+		display: none;
+	}
+
+	.rpc-sandbox-name {
+		grid-column: 1 / -1;
+		margin-top: 0.4rem;
+	}
+}
+
+/* The radius slider would be a sliver beside its label, so the label goes above it */
+@media (max-width: 400px) {
+	.rpc-sandbox-radius {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.rpc-sandbox-radius > span {
+		grid-column: 1 / -1;
+	}
+}
+
+.rpc-predict-preset select {
+	padding: 0.25rem 0.4rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--bg-sunken);
+	color: var(--text);
+	font-size: 0.85rem;
+}
+
+.rpc-predict .sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.rpc-step-clock { font-size: 0.8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.rpc-portal-tools { width: min(800px, 100%); display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.8rem; }
+.rpc-portal-tools p { flex: 1 1 20rem; color: var(--text-muted); font-size: 0.8rem; text-align: center; }
+.rpc-portal-tools button[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }

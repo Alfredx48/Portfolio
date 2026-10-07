@@ -3,6 +3,7 @@ import { createEffect, createMemo, createSignal, For, on, Show } from 'solid-js'
 import resumePdf from '../assets/Resume.pdf';
 import { unlock, unlocked } from '../state/achievements';
 import { paletteOpen, partyMode, setPaletteOpen, setTrophiesOpen, togglePartyMode } from '../state/ui';
+import { save } from '../utils/storage';
 import './overlays.css';
 
 // Characters of `query` appear in order in `text`. Lower scores rank higher.
@@ -40,9 +41,23 @@ function CommandPalette() {
 		{ group: 'Jump to', label: 'About', icon: '👋', run: () => goToSection('about') },
 		{ group: 'Jump to', label: 'Projects', icon: '🛠️', run: () => goToSection('projects') },
 		{ group: 'Jump to', label: 'Playground', icon: '🎮', run: () => goToSection('playground') },
+		{ group: 'Play', label: 'Neon Ricochet', icon: '✦', run: () => navigate('/neon-ricochet') },
 		{ group: 'Play', label: 'RPC Simulator', icon: '✂️', run: () => navigate('/rpc-simulator') },
 		{ group: 'Play', label: 'Memory Game', icon: '🃏', run: () => navigate('/memory-game') },
 		{ group: 'Play', label: 'TicTacToe vs AI', icon: '⭕', run: () => navigate('/tictactoe') },
+		{ group: 'Play', label: 'Ultimate TicTacToe', icon: '❌', run: () => navigate('/tictactoe/ultimate') },
+		{ group: 'Play', label: 'Play a friend online', icon: '🌐', run: () => navigate('/tictactoe/online') },
+		{
+			group: 'Play',
+			label: 'Memory daily challenge',
+			icon: '📅',
+			// The Memory Game opens in whichever mode it was last left in
+			run: () => {
+				save('memory-mode', 'daily');
+				navigate('/memory-game');
+			},
+		},
+		{ group: 'Play', label: 'Games & stats', icon: '📊', run: () => navigate('/games') },
 		{ group: 'Contact', label: 'Send me a message', icon: '✉️', run: () => navigate('/contact') },
 		{ group: 'Contact', label: 'Open résumé (PDF)', icon: '📄', run: () => openExternal(resumePdf) },
 		{ group: 'Contact', label: 'GitHub', icon: '🐙', run: () => openExternal('https://github.com/Alfredx48') },

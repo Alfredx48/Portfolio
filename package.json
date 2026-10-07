@@ -26,6 +26,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@solidjs/router": "^1.0.0",
+    "peerjs": "^1.5.5",
     "solid-js": "^1.9.15",
     "toastify-js": "^1.12.0"
   }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BATCH_DT, createGame, insights, MAX_GAME_TIME, MAX_RUNS, simulateGame, summarize } from './batch';
-import { TYPES } from './simulation';
+import { LIZARD_SPOCK, TYPES } from './simulation';
 
 const OPTIONS = { countPerType: 3, width: 300, height: 200 };
 
@@ -254,5 +254,56 @@ describe('insights', () => {
 	it('reports the first-out rule', () => {
 		const lines = insights(summarize(Array.from({ length: 4 }, () => record())));
 		expect(lines.join(' ')).toMatch(/In 100% of games/);
+	});
+});
+
+describe('Lizard-Spock batches', () => {
+	const rules = LIZARD_SPOCK;
+	const game = simulateGame({ ...OPTIONS, rules, random: mulberry32(2) });
+
+	it('finishes with one of the five types as the winner', () => {
+		expect(rules.types).toContain(game.winner);
+		expect(rules.types).toContain(game.firstEliminated);
+		expect(game.firstEliminated).not.toBe(game.winner);
+		expect(Object.keys(game.peak)).toEqual(rules.types);
+		expect(game.timeline[0]).toEqual({ t: 0, rock: 3, paper: 3, scissors: 3, lizard: 3, spock: 3 });
+		expect(game.timeline.at(-1)[game.winner]).toBe(15);
+	});
+
+	it('takes a different start count for each type', () => {
+		const counts = { rock: 1, paper: 2, scissors: 3, lizard: 4, spock: 5 };
+		const uneven = createGame({ ...OPTIONS, countPerType: counts, rules });
+		expect(uneven.entities).toHaveLength(15);
+		expect(simulateGame({ ...OPTIONS, countPerType: counts, rules, random: mulberry32(4) }).timeline[0]).toMatchObject(counts);
+	});
+
+	it('summarises five types', () => {
+		const records = [2, 3, 4, 5, 6, 7].map((seed) => simulateGame({ ...OPTIONS, rules, random: mulberry32(seed) }));
+		const summary = summarize(records, rules);
+		expect(Object.keys(summary.wins)).toEqual(rules.types);
+		expect(Object.values(summary.wins).reduce((a, b) => a + b)).toBe(summary.decided);
+		expect(Object.keys(summary.winRate)).toEqual(rules.types);
+		const lines = insights(summary);
+		expect(lines.join(' ')).not.toMatch(/NaN|undefined/);
+		expect(lines.join(' ')).toMatch(/five look evenly matched|real edge|Too few/);
+	});
+
+	it('counts a first-out win when the winner is either type the first casualty used to beat', () => {
+		const summary = summarize(
+			[
+				record({ firstEliminated: 'rock', winner: 'lizard' }), // rock beats scissors and lizard
+				record({ firstEliminated: 'rock', winner: 'scissors' }),
+				record({ firstEliminated: 'rock', winner: 'paper' }),
+			],
+			rules,
+		);
+		expect(summary.firstOutRule).toEqual({ holds: 2, total: 3 });
+	});
+
+	it('uses the sandbox settings', () => {
+		const frozen = simulateGame({ ...OPTIONS, rules, radius: 0, maxTime: 20, random: mulberry32(2) });
+		expect(frozen.winner).toBeNull();
+		expect(frozen.duration).toBe(20);
+		expect(frozen.timeline.at(-1)).toMatchObject({ rock: 3, spock: 3 });
 	});
 });
