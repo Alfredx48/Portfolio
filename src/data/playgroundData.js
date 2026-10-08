@@ -1,5 +1,5 @@
 const playgroundData = [
-	{ name: 'Neon Ricochet', href: '/neon-ricochet', icon: '✦', description: 'A neon arcade of sharp rebounds, combo chains, and falling power-ups. Clear five sectors with your paddle and chase your best score.' },
+	{ name: 'Neon Ricochet', href: '/neon-ricochet', icon: '✦', description: 'Pilot your ship through twelve cosmic sectors or jump into Boss Rush. Draft upgrades, charge a Nova Pulse, and turn eight power-ups into a spectacular build.' },
 	{
 		name: 'RPC Simulator',
 		href: '/rpc-simulator',

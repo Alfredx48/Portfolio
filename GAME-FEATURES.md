@@ -25,11 +25,50 @@ Expand Move log during a connected game to see each move's mark, player, row and
 
 # Creative expansion
 
-## Neon Ricochet — new arcade game
+## Neon Ricochet — arcade expedition
 
-Open `/neon-ricochet`, or choose Neon Ricochet on the homepage, Games hub, or command palette. Steer a paddle, chain brick hits for up to an eight-times multiplier, and clear five sectors. Armored bricks take two hits. Every sixth destroyed brick drops a power-up: a wide paddle, slow ball, or one-use shield. Each sector awards bonus points and a life. Records and three achievements persist in this browser.
+Open `/neon-ricochet`, or choose Neon Ricochet on the homepage, Games hub, or command palette.
 
-Pointer and touch dragging steer the paddle. Focus the canvas and use arrow keys or A/D; Space or P launches/pauses/resumes. The on-screen buttons support touch and keyboard activation. Scrolling away from a live game, changing tabs, or leaving the browser pauses it. Reduced motion removes particles and glow.
+### Two routes, three ships
+
+Campaign crosses twelve named sectors, including three boss encounters in sectors 4, 8, and 12. Boss Rush starts directly at those three encounters. Its record is separate from Campaign, and starting at a later sector does not award campaign progress achievements.
+
+Choose a ship before starting: Courier is balanced, Bulwark has a wider paddle and extra life with slower balls, and Interceptor trades a life and paddle width for faster Nova charging. Changing the selected ship or route during an active run configures the next run.
+
+### Build a loadout
+
+Campaign offers three upgrade cards after clearing sectors 2, 4, 6, 8, and 10. Boss Rush offers cards after its first two bosses. The game freezes while choosing. Pick one permanent upgrade; its stack count carries through that run, including lost lives. Available upgrades improve paddle width or movement, score gains, pulse charging, power duration, collectible attraction, laser damage, or a starting shield. Stack limits prevent unlimited bonuses.
+
+Armored bricks require multiple hits. Reactor bricks damage their neighbors and can trigger explosive chains. Selected sectors add moving bumpers that redirect the ball. Bosses move across the arena, fire telegraphed shots, and must be defeated alongside their accompanying bricks to clear the sector. A safety shield can absorb an incoming shot; otherwise a paddle hit costs a life. Boss damage remains after losing a life.
+
+### Nova Pulse
+
+Brick and boss hits charge the Nova meter. At full charge, press E or use the Nova button to damage the field and boss, destroy hostile shots, and send a visible shockwave across the arena. The meter resets after use. Pulses cannot fire while paused or choosing upgrades.
+
+### Collectible powers
+
+Every fifth destroyed brick drops a collectible. Eight powers rotate through the run:
+
+| Power | Effect |
+| --- | --- |
+| Stretch | A wider paddle for 12 seconds. |
+| Time Warp | Slows ball movement for 9 seconds. |
+| Safety Net | Saves one falling ball or absorbs a hostile shot. |
+| Split Signal | Splits play into up to three balls; a life is lost only when all balls fall. |
+| Pulse Cannons | Automatically fires brick-breaking bolts for 10 seconds. |
+| Fireball | Pierces bricks and burns through armor for 8 seconds. |
+| Magnetic Grip | Catches rebounds on the paddle for 10 seconds; release with Launch or Space. |
+| Extra Life | Restores one life, up to five. |
+
+Upgrade bonuses can extend timed powers. Timers stop during pauses and upgrade choices; temporary powers reset after losing a life or advancing sectors. Permanent upgrades remain. Consecutive brick hits build a score multiplier up to ×8.
+
+### Controls, presentation, and records
+
+Pointer and touch dragging steer the paddle. Focus the canvas and use arrow keys or A/D. Space launches/releases a held ball or pauses an active rally; P pauses/resumes; E triggers a charged Nova Pulse. Native buttons support touch and keyboard play. Fullscreen expands the cockpit when supported; Escape exits using the browser's standard behavior.
+
+The cockpit includes boss health, charge status, active power timers, and campaign progress. The hangar, route map, and power guide explain choices. Cosmic backdrops, trails, impact effects, moving hazards, and shockwaves follow reduced-motion preferences. The optional original synth soundtrack starts only after choosing Music, follows the shared mute setting, and quiets when paused or outside live play.
+
+Campaign records use the existing `ricochet-best` key; Boss Rush uses `ricochet-bossrush-best`. Best score, progress, and combo persist after completed or abandoned runs, without mixing the two routes. Achievements reward power catches, campaign progress, Nova use, boss victories, and a complete five-upgrade campaign build. No live deployment is made by editing these files.
 
 ## Orbit TicTacToe
 

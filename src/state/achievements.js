@@ -9,7 +9,12 @@ const STORAGE_KEY = 'achievements';
 export const ACHIEVEMENTS = [
 	{ id: 'ricochet-first-sector', title: 'First Frequency', hint: 'Clear the first sector in Neon Ricochet.', description: 'Cleared the first Neon Ricochet sector.' },
 	{ id: 'ricochet-combo', title: 'Chain Reaction', hint: 'Reach an eight-hit combo in Neon Ricochet.', description: 'Reached an eight-hit Neon Ricochet combo.' },
-	{ id: 'ricochet-clear', title: 'Signal Restored', hint: 'Clear all five Neon Ricochet sectors.', description: 'Cleared all five Neon Ricochet sectors.' },
+	{ id: 'ricochet-clear', title: 'Signal Restored', hint: 'Clear all twelve Neon Ricochet sectors.', description: 'Cleared the Neon Ricochet campaign.' },
+	{ id: 'ricochet-loadout', title: 'Power Collector', hint: 'Catch eight power-ups in one Neon Ricochet run.', description: 'Caught eight power-ups in one Neon Ricochet run.' },
+	{ id: 'ricochet-deep-space', title: 'Deep Space', hint: 'Clear the first six Neon Ricochet sectors.', description: 'Reached the second half of the Neon Ricochet campaign.' },
+	{ id: 'ricochet-nova', title: 'Supercharged', hint: 'Unleash a fully charged Nova Pulse in Neon Ricochet.', description: 'Unleashed a Nova Pulse in Neon Ricochet.' },
+	{ id: 'ricochet-boss', title: 'Giant Killer', hint: 'Defeat a Neon Ricochet boss.', description: 'Defeated a Neon Ricochet boss.' },
+	{ id: 'ricochet-build', title: 'Custom Built', hint: 'Choose five upgrades in one Neon Ricochet campaign.', description: 'Completed five upgrade drafts in a Neon Ricochet campaign.' },
 	{ id: 'found-memory-game', computerOnly: true, title: 'Memory Lane', hint: 'Something is hiding in the dark on the home page.', description: 'Found the hidden Memory Game link.', secret: true },
 	{ id: 'found-rpc-simulator', computerOnly: true, title: 'Under the Spotlight', hint: 'Something is hiding in the dark on the home page.', description: 'Found the hidden RPC Simulator link.', secret: true },
 	{ id: 'found-tictactoe', computerOnly: true, title: 'X Marks the Spot', hint: 'Something is hiding in the dark on the home page.', description: 'Found the hidden TicTacToe link.', secret: true },

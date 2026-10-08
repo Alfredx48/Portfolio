@@ -6,7 +6,7 @@ import { hasPrefix } from './stats';
 const ultimateOnly = (a) => a.id === 'ttt-ultimate';
 
 export const GAMES = [
-	{ id: 'ricochet', name: 'Neon Ricochet', href: '/neon-ricochet', icon: '✦', description: 'A neon brick-breaking arcade. Aim sharp rebounds, build combos, catch power-ups, and clear five sectors before your lives run out.', stats: 'ricochet', empty: 'Three lives. Five sectors. Find your flow.', achievements: hasPrefix('ricochet-') },
+	{ id: 'ricochet', name: 'Neon Ricochet', href: '/neon-ricochet', icon: '✦', description: 'An arcade expedition with three ships, twelve sectors, and three boss encounters. Draft permanent upgrades, unleash Nova Pulse, or jump straight into Boss Rush.', stats: 'ricochet', empty: 'Pick a ship. Build your loadout. Challenge the crown.', achievements: hasPrefix('ricochet-') },
 	{
 		id: 'tictactoe',
 		name: 'TicTacToe',

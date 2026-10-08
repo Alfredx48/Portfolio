@@ -1,3 +1,4 @@
+import { SECTORS } from '../neon-ricochet/engine';
 import { dailyStreak, dateKey } from '../memory-game/daily';
 import { formatCountdown, formatTime, LEVELS } from '../memory-game/deck';
 
@@ -145,7 +146,16 @@ export function readStats(read, today = dateKey()) {
 			{ best: read('memory-best', {}), daily: read('memory-daily', null), timeAttack: read('memory-time-attack', {}) },
 			today,
 		),
-		ricochet: (() => { const best = read('ricochet-best', {}); return isObject(best) && count(best.score) ? [{ label: 'Best score', value: count(best.score).toLocaleString() }, { label: 'Farthest sector', value: `${Math.min(5, count(best.sector))}/5` }, { label: 'Best combo', value: `×${count(best.combo)}` }] : []; })(),
+		ricochet: (() => {
+			const best = read('ricochet-best', {}), rush = read('ricochet-bossrush-best', {});
+			const stats = isObject(best) && count(best.score) ? [
+				{ label: 'Best score', value: count(best.score).toLocaleString() },
+				{ label: 'Farthest sector', value: `${Math.min(SECTORS, count(best.sector))}/${SECTORS}` },
+				{ label: 'Best combo', value: `×${count(best.combo)}` },
+			] : [];
+			if (isObject(rush) && count(rush.score)) stats.push({ label: 'Boss Rush best', value: count(rush.score).toLocaleString() });
+			return stats;
+		})(),
 		rpc: rpcStats({ bestStreak: read('rpc-best-streak', 0), rules: read('rpc-rules', null) }),
 		daily: dailyStatus(read('memory-daily', null), today),
 	};
