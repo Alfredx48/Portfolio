@@ -62,7 +62,8 @@ export default function NeonRicochet() {
 	const [motionReduced, setMotionReduced] = createSignal(false);
 	const [musicOn, setMusicOn] = createSignal(false);
 	const [fullscreen, setFullscreen] = createSignal(false);
-	const [canFullscreen, setCanFullscreen] = createSignal(false);
+	const [easyView, setEasyView] = createSignal(load('ricochet-easy-view', false) === true);
+	let previousOverflow, focusBeforeFullscreen;
 	const [best, setBest] = createSignal(readBest(initialMode));
 	const [announcement, setAnnouncement] = createSignal(`${SECTORS} sectors. Three bosses. Choose a ship, build your loadout, and restore the signal.`);
 	const level = () => LEVELS[hud().sector - 1];
@@ -122,6 +123,13 @@ export default function NeonRicochet() {
 	};
 	const draw = () => {
 		if (!ctx) return;
+		const scaleX = canvas.clientWidth / WIDTH || 1, scaleY = canvas.clientHeight / HEIGHT || 1;
+		// Keep labels readable and balls round when the arena fills a tall or wide screen.
+		const drawText = (text, x, y) => {
+			ctx.save(); ctx.translate(x, y); ctx.scale(1, scaleX / scaleY);
+			ctx.font = ctx.font.replace(/([\d.]+)px/, (_, size) => `${Math.max(Number(size), 11 / scaleX)}px`);
+			ctx.fillText(text, 0, 0); ctx.restore();
+		};
 		if (backdropSector !== run.sector) paintBackdrop();
 		ctx.fillStyle = '#060a18'; ctx.fillRect(0, 0, WIDTH, HEIGHT);
 		ctx.save();
@@ -134,8 +142,8 @@ export default function NeonRicochet() {
 		}
 		ctx.shadowBlur = 0; ctx.globalAlpha = 1;
 		ctx.font = '600 11px system-ui'; ctx.fillStyle = '#b0c4df'; ctx.textAlign = 'left';
-		ctx.fillText(`${String(run.sector).padStart(2, '0')}  /  ${LEVELS[run.sector - 1].name.toUpperCase()}`, 30, 32);
-		ctx.textAlign = 'right'; ctx.fillText(`${run.bricks.filter(b => b.hp > 0).length} SIGNALS LEFT`, WIDTH - 30, 32);
+		drawText(`${String(run.sector).padStart(2, '0')}  /  ${LEVELS[run.sector - 1].name.toUpperCase()}`, 30, 32);
+		ctx.textAlign = 'right'; drawText(`${run.bricks.filter(b => b.hp > 0).length} SIGNALS LEFT`, WIDTH - 30, 32);
 		ctx.strokeStyle = '#8298c02e'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(30, 46); ctx.lineTo(WIDTH - 30, 46); ctx.stroke();
 		for (const b of run.bricks) {
 			if (b.hp <= 0) continue;
@@ -151,7 +159,7 @@ export default function NeonRicochet() {
 				roundedRect(ctx, b.x + 5, b.y + 6, b.w - 10, b.h - 11, 2); ctx.stroke();
 				for (let i = 0; i < b.hp; i++) { ctx.fillStyle = '#071326ad'; ctx.fillRect(b.x + b.w / 2 - b.hp * 3 + i * 6, b.y + b.h / 2, 3, 3); }
 			}
-			if (blast) { ctx.fillStyle = '#381b09'; ctx.font = '800 13px system-ui'; ctx.textAlign = 'center'; ctx.fillText('✦', b.x + b.w / 2, b.y + b.h / 2 + 4); }
+			if (blast) { ctx.fillStyle = '#381b09'; ctx.font = '800 13px system-ui'; ctx.textAlign = 'center'; drawText('✦', b.x + b.w / 2, b.y + b.h / 2 + 4); }
 		}
 		if (lively()) for (const p of run.particles) {
 			ctx.globalAlpha = Math.max(0, p.life / (p.maxLife || 0.45)); ctx.fillStyle = p.color;
@@ -166,7 +174,7 @@ export default function NeonRicochet() {
 			ctx.strokeStyle = `${bumper.color}88`; ctx.lineWidth = 1;
 			ctx.beginPath(); ctx.arc(0, 0, bumper.radius - 6, 0, Math.PI * 2); ctx.stroke();
 			for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + (lively() ? run.time * 0.7 : 0); ctx.fillStyle = bumper.color; ctx.beginPath(); ctx.arc(Math.cos(a) * (bumper.radius - 3), Math.sin(a) * (bumper.radius - 3), 2, 0, Math.PI * 2); ctx.fill(); }
-			ctx.fillStyle = '#dce7ff'; ctx.font = '700 16px system-ui'; ctx.textAlign = 'center'; ctx.fillText('+', 0, 5); ctx.restore();
+			ctx.fillStyle = '#dce7ff'; ctx.font = '700 16px system-ui'; ctx.textAlign = 'center'; drawText('+', 0, 5); ctx.restore();
 		}
 		const boss = run.boss;
 		if (boss?.hp > 0) {
@@ -209,7 +217,7 @@ export default function NeonRicochet() {
 			ctx.shadowBlur = !lively() ? 0 : 13; ctx.shadowColor = power.color;
 			ctx.fillStyle = '#101a30'; ctx.strokeStyle = power.color; ctx.lineWidth = 2;
 			roundedRect(ctx, -14, -14, 28, 28, 8); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
-			ctx.fillStyle = power.color; ctx.font = '800 15px system-ui'; ctx.textAlign = 'center'; ctx.fillText(power.glyph, 0, 5); ctx.restore();
+			ctx.fillStyle = power.color; ctx.font = '800 15px system-ui'; ctx.textAlign = 'center'; drawText(power.glyph, 0, 5); ctx.restore();
 		}
 		if (run.shield > 0) {
 			ctx.strokeStyle = POWERUPS.shield.color; ctx.lineWidth = 3; ctx.shadowBlur = !lively() ? 0 : 12; ctx.shadowColor = POWERUPS.shield.color;
@@ -231,22 +239,24 @@ export default function NeonRicochet() {
 			roundedRect(ctx, bolt.x - (bolt.w || 4) / 2, bolt.y, bolt.w || 4, bolt.h || 16, 2); ctx.fill(); ctx.shadowBlur = 0;
 		}
 		for (const ball of run.balls) {
-			const color = run.fire > 0 ? POWERUPS.fire.color : '#eaffff';
+			const color = easyView() ? '#ffffff' : run.fire > 0 ? POWERUPS.fire.color : '#eaffff';
 			if (lively() && ball.trail?.length && !ball.held) {
 				ball.trail.forEach((point, i) => { ctx.globalAlpha = (i + 1) / ball.trail.length * 0.25; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(point.x, point.y, 2 + i / ball.trail.length * 4, 0, Math.PI * 2); ctx.fill(); });
 				ctx.globalAlpha = 1;
 			}
 			ctx.shadowBlur = !lively() ? 0 : 14; ctx.shadowColor = color; ctx.fillStyle = color;
-			ctx.beginPath(); ctx.arc(ball.x, ball.y, 8, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+			const radius = Math.max(easyView() ? 12 : 8, (easyView() ? 9 : 6) / scaleX);
+			ctx.beginPath(); ctx.ellipse(ball.x, ball.y, radius, radius * scaleX / scaleY, 0, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+			if (easyView()) { ctx.strokeStyle = '#050915'; ctx.lineWidth = 3; ctx.stroke(); }
 			ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ball.x - 2, ball.y - 2, 2.5, 0, Math.PI * 2); ctx.fill();
 		}
 		if (run.combo >= 2) {
 			ctx.textAlign = 'center'; ctx.fillStyle = '#d5fbba'; ctx.font = '800 19px system-ui';
-			ctx.fillText(`×${Math.min(8, run.combo)} CHAIN`, WIDTH / 2, HEIGHT - 76);
+			drawText(`×${Math.min(8, run.combo)} CHAIN`, WIDTH / 2, HEIGHT - 76);
 		}
 		if (callout && lively()) {
 			ctx.globalAlpha = Math.min(1, callout.life / 0.35); ctx.textAlign = 'center'; ctx.fillStyle = callout.color; ctx.font = '800 21px system-ui';
-			ctx.fillText(callout.text, WIDTH / 2, HEIGHT - 132 - (1 - callout.life / callout.maxLife) * 18); ctx.globalAlpha = 1;
+			drawText(callout.text, WIDTH / 2, HEIGHT - 132 - (1 - callout.life / callout.maxLife) * 18); ctx.globalAlpha = 1;
 		}
 		ctx.restore();
 	};
@@ -324,13 +334,36 @@ export default function NeonRicochet() {
 		if (!music || music.setEnabled(next) === false) { setAnnouncement('Synth music is unavailable in this browser.'); return; }
 		setMusicOn(next);
 	};
-	const toggleFullscreen = async () => {
-		try { if (document.fullscreenElement === consoleElement) await document.exitFullscreen(); else await consoleElement.requestFullscreen(); }
-		catch { setAnnouncement('Fullscreen could not open. You can keep playing here.'); }
+	const setImmersive = active => {
+		if (active === fullscreen()) return;
+		if (run.phase === 'playing') pause();
+		left = right = false;
+		if (active) {
+			focusBeforeFullscreen = document.activeElement;
+			previousOverflow = document.body.style.overflow;
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = previousOverflow ?? '';
+		}
+		setFullscreen(active);
+		queueMicrotask(() => active ? consoleElement.querySelector('.nr-fullscreen')?.focus({ preventScroll: true }) : focusBeforeFullscreen?.focus({ preventScroll: true }));
 	};
+	const toggleFullscreen = async () => {
+		if (fullscreen()) {
+			if (document.fullscreenElement === consoleElement) {
+				try { await document.exitFullscreen(); } catch { setAnnouncement('Use your browser’s fullscreen exit control to leave fullscreen.'); }
+			} else setImmersive(false);
+			return;
+		}
+		setImmersive(true);
+		if (document.fullscreenEnabled && typeof consoleElement.requestFullscreen === 'function') {
+			try { await consoleElement.requestFullscreen(); } catch { /* The screen-filling layout also works without native fullscreen. */ }
+		}
+	};
+	const toggleEasyView = () => { const next = !easyView(); setEasyView(next); save('ricochet-easy-view', next); draw(); };
 	const pointer = event => {
 		if (paused() || !['ready', 'playing'].includes(run.phase)) return;
-		const rect = canvas.getBoundingClientRect(); if (!rect.width) return;
+		const rect = event.currentTarget.getBoundingClientRect(); if (!rect.width) return;
 		aim(run, ((event.clientX - rect.left) / rect.width) * WIDTH);
 	};
 	onMount(() => {
@@ -338,9 +371,12 @@ export default function NeonRicochet() {
 		const dpr = Math.min(2, window.devicePixelRatio || 1);
 		canvas.width = WIDTH * dpr; canvas.height = HEIGHT * dpr; ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
 		media = window.matchMedia('(prefers-reduced-motion: reduce)'); reduced = media.matches; setMotionReduced(reduced);
-		setCanFullscreen(!!document.fullscreenEnabled && typeof consoleElement?.requestFullscreen === 'function');
-		const fullscreenChange = () => { setFullscreen(document.fullscreenElement === consoleElement); if (run.phase === 'playing') pause(); };
+		const fullscreenChange = () => setImmersive(document.fullscreenElement === consoleElement);
 		document.addEventListener('fullscreenchange', fullscreenChange);
+		const escape = event => { if (event.key === 'Escape' && fullscreen() && !document.fullscreenElement) setImmersive(false); };
+		const resize = () => { left = right = false; if (run.phase === 'playing') pause(); };
+		window.addEventListener('keydown', escape);
+		window.addEventListener('resize', resize);
 		const motion = () => { reduced = media.matches; setMotionReduced(reduced); draw(); }; media.addEventListener('change', motion);
 		const hidden = () => { if (document.hidden && run.phase === 'playing') pause(); };
 		document.addEventListener('visibilitychange', hidden);
@@ -361,6 +397,8 @@ export default function NeonRicochet() {
 			draw(); frame = requestAnimationFrame(tick);
 		}; frame = requestAnimationFrame(tick);
 		onCleanup(() => {
+			if (fullscreen()) document.body.style.overflow = previousOverflow ?? '';
+			window.removeEventListener('keydown', escape); window.removeEventListener('resize', resize);
 			saveRecord(); music?.dispose(); document.removeEventListener('fullscreenchange', fullscreenChange);
 			window.removeEventListener('pagehide', saveRecord);
 			cancelAnimationFrame(frame); observer.disconnect(); media.removeEventListener('change', motion);
@@ -381,13 +419,20 @@ export default function NeonRicochet() {
 		event.preventDefault(); event.currentTarget.setPointerCapture(event.pointerId);
 		if (side === 'left') left = true; else right = true;
 	};
+	const keepFocusInGame = event => {
+		if (!fullscreen() || event.key !== 'Tab') return;
+		const targets = [...consoleElement.querySelectorAll('button:not(:disabled), summary, canvas[tabindex="0"]')].filter(el => el.getClientRects().length && (el.matches('summary') || !el.closest('details:not([open])')));
+		const first = targets[0], last = targets.at(-1);
+		if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+		else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+	};
 	return <section class="page ricochet" style={{ '--nr-accent': level().color, '--nr-ship': SHIPS[hud().ship].color }}>
 		<header class="nr-heading">
-			<div class="nr-topline"><A href="/games" class="back-link">← Arcade</A><span class="nr-edition">FLIGHT DECK // NR–06</span></div>
+			<div class="nr-topline"><A href="/games" class="back-link">← Arcade</A><button type="button" class="btn nr-control nr-expand" aria-label="Play fullscreen" onClick={toggleFullscreen}>⛶ Play fullscreen</button></div>
 			<div class="nr-title-row"><div><p class="nr-kicker">BREAK THE SIGNAL. OWN THE VOID.</p><h1 class="page-title">Neon <span>Ricochet<span class="nr-title-dot">.</span></span></h1><p class="nr-tagline">Three ships. Twelve sectors. A crown worth chasing.</p></div><span class="nr-status" classList={{ 'is-active': hud().phase === 'playing' && !paused() }}><i aria-hidden="true" />{status()}</span></div>
 		</header>
 		<div class="nr-play-layout">
-			<div ref={consoleElement} class="nr-console" classList={{ 'nr-immersive': fullscreen() }}>
+			<div ref={consoleElement} class="nr-console" onKeyDown={keepFocusInGame} classList={{ 'nr-immersive': fullscreen() }}>
 				<dl class="nr-hud">
 					<div class="nr-score"><dt>Score</dt><dd>{formatScore(hud().score)}</dd></div>
 					<div><dt>Chain</dt><dd classList={{ 'nr-hot': hud().combo >= 2 }}>×{Math.min(8, Math.max(1, hud().combo))}<small>best ×{Math.min(8, Math.max(1, hud().maxCombo))}</small></dd></div>
@@ -423,8 +468,9 @@ export default function NeonRicochet() {
 				</div>
 				<div class="nr-loadout" aria-label="Active power-ups"><span class="nr-loadout-label">CAPSULES</span><Show when={activePowers().length || hud().shield || hud().balls > 1} fallback={<span class="nr-loadout-empty">Catch glowing capsules to power up.</span>}><For each={activePowers()}>{kind => <span class="nr-power-chip" style={{ '--power-color': POWERUPS[kind].color }}><b aria-hidden="true">{POWERUPS[kind].glyph}</b>{POWERUPS[kind].name}<strong>{hud()[kind]}s</strong></span>}</For><Show when={hud().shield > 0}><span class="nr-power-chip" style={{ '--power-color': POWERUPS.shield.color }}><b aria-hidden="true">{POWERUPS.shield.glyph}</b>Shield<strong>{hud().shield} save{hud().shield > 1 ? 's' : ''}</strong></span></Show><Show when={hud().balls > 1}><span class="nr-power-chip" style={{ '--power-color': POWERUPS.multiball.color }}><b aria-hidden="true">{POWERUPS.multiball.glyph}</b>Multiball<strong>{hud().balls} balls</strong></span></Show></Show></div>
 				<Show when={activePerks().length}><div class="nr-perk-tray" aria-label="Permanent upgrades for this run"><span class="nr-loadout-label">BUILD</span><For each={activePerks()}>{([id, count]) => <span title={UPGRADES[id].description} class="nr-perk-chip" style={{ '--perk-color': UPGRADES[id].color }}><b aria-hidden="true">{UPGRADES[id].glyph}</b>{UPGRADES[id].name}<strong>×{count}</strong></span>}</For></div></Show>
-				<div class="nr-toolbar"><div class="nr-actions"><button class="btn nr-control" onClick={activate} disabled={terminal() || drafting()}>{paused() ? 'Resume' : hud().phase === 'ready' ? 'Launch' : hud().held ? 'Release ball' : drafting() ? 'Choose perk' : 'Pause'}<kbd>{hud().held || hud().phase === 'ready' ? 'Space' : 'P'}</kbd></button><Show when={hud().phase === 'playing' && hud().held && !paused()}><button class="btn nr-control" onClick={togglePause}>Pause<kbd>P</kbd></button></Show><button class="btn nr-control" onClick={restart}>New run<span aria-hidden="true">↻</span></button></div><div class="nr-audio-actions"><button type="button" class="btn nr-control nr-music" aria-label="Synth soundtrack" aria-pressed={musicOn()} classList={{ 'is-enabled': musicOn() }} title={musicOn() ? 'Synth soundtrack on; follows sound mute' : 'Turn on the synth soundtrack'} onClick={toggleMusic}><span aria-hidden="true">♫</span><span>Music</span></button><SoundToggle /><Show when={canFullscreen()}><button type="button" class="btn nr-control nr-fullscreen" aria-label={fullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'} title={fullscreen() ? 'Exit fullscreen' : 'Fullscreen flight deck'} onClick={toggleFullscreen}><span aria-hidden="true">{fullscreen() ? '⊡' : '⛶'}</span></button></Show></div></div>
-				<div class="nr-touch" role="group" aria-label="Touch paddle controls"><button class="btn nr-control" aria-label="Move paddle left" onPointerDown={e => control(e, 'left')} onPointerUp={() => left = false} onPointerCancel={() => left = false} onLostPointerCapture={() => left = false} onClick={e => { if (e.detail === 0 && !paused() && !drafting()) aim(run, run.paddle.target - 70); }}>←</button><span>Drag to steer <span>· catch, rebound, repeat</span></span><button class="btn nr-control" aria-label="Move paddle right" onPointerDown={e => control(e, 'right')} onPointerUp={() => right = false} onPointerCancel={() => right = false} onLostPointerCapture={() => right = false} onClick={e => { if (e.detail === 0 && !paused() && !drafting()) aim(run, run.paddle.target + 70); }}>→</button></div>
+				<div class="nr-toolbar"><div class="nr-actions"><button class="btn nr-control" onClick={activate} disabled={terminal() || drafting()}>{paused() ? 'Resume' : hud().phase === 'ready' ? 'Launch' : hud().held ? 'Release ball' : drafting() ? 'Choose perk' : 'Pause'}<kbd>{hud().held || hud().phase === 'ready' ? 'Space' : 'P'}</kbd></button><Show when={hud().phase === 'playing' && hud().held && !paused()}><button class="btn nr-control" onClick={togglePause}>Pause<kbd>P</kbd></button></Show><button class="btn nr-control nr-restart" onClick={restart}>New run<span aria-hidden="true">↻</span></button><Show when={fullscreen()}><button class="btn nr-control nr-compact-nova" disabled={!pulseReady()} onClick={firePulse}>Nova {hud().energy}%</button></Show></div><div class="nr-audio-actions"><button type="button" class="btn nr-control nr-music" aria-label="Synth soundtrack" aria-pressed={musicOn()} classList={{ 'is-enabled': musicOn() }} title={musicOn() ? 'Synth soundtrack on; follows sound mute' : 'Turn on the synth soundtrack'} onClick={toggleMusic}><span aria-hidden="true">♫</span><span>Music</span></button><SoundToggle /><button type="button" class="btn nr-control nr-fullscreen" aria-label={fullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'} aria-pressed={fullscreen()} title={fullscreen() ? 'Exit fullscreen' : 'Fullscreen flight deck'} onClick={toggleFullscreen}><span aria-hidden="true">{fullscreen() ? '⊡' : '⛶'}</span><span>{fullscreen() ? 'Exit' : 'Fullscreen'}</span></button></div></div>
+				<div class="nr-touch" role="group" aria-label="Touch paddle controls"><button class="btn nr-control" aria-label="Move paddle left" onPointerDown={e => control(e, 'left')} onPointerUp={() => left = false} onPointerCancel={() => left = false} onLostPointerCapture={() => left = false} onClick={e => { if (e.detail === 0 && !paused() && !drafting()) aim(run, run.paddle.target - 70); }}>←</button><div class="nr-steering-pad" onPointerDown={event => { event.currentTarget.setPointerCapture(event.pointerId); pointer(event); }} onPointerMove={event => { if (event.buttons) pointer(event); }}><span>Slide here to steer</span><small>or hold the arrows</small></div><button class="btn nr-control" aria-label="Move paddle right" onPointerDown={e => control(e, 'right')} onPointerUp={() => right = false} onPointerCancel={() => right = false} onLostPointerCapture={() => right = false} onClick={e => { if (e.detail === 0 && !paused() && !drafting()) aim(run, run.paddle.target + 70); }}>→</button></div>
+				<details class="nr-accessibility" onToggle={event => { if (event.currentTarget.open && run.phase === 'playing') pause(); }}><summary>Play settings</summary><div class="nr-accessibility-panel"><button class="btn nr-control" aria-pressed={easyView()} onClick={toggleEasyView}>Larger, high contrast ball {easyView() ? 'on' : 'off'}</button><button class="btn nr-control" aria-pressed={effectsOn() && !motionReduced()} disabled={motionReduced()} onClick={toggleEffects}>Visual effects {effectsOn() && !motionReduced() ? 'on' : 'off'}</button><p>{motionReduced() ? 'Your reduced motion preference is active.' : 'Turn effects off to remove shake, trails, and particles.'} Slide on the pad or hold the arrows to steer. Rotate your phone for a wider arena. Resizing pauses the game.</p></div></details>
 				<p class="nr-announcement" role="status" aria-live="polite">{announcement()}</p>
 			</div>
 			<aside class="nr-mission-rail" aria-label="Flight computer">
@@ -443,7 +489,7 @@ export default function NeonRicochet() {
 			<details class="nr-guide nr-codex"><summary><span>Capsule field guide<small>Eight temporary powers · stack your advantages</small></span><b aria-hidden="true">+</b></summary><div class="nr-codex-grid"><For each={Object.entries(POWERUPS)}>{([kind, power]) => <article class="nr-codex-card" style={{ '--power-color': power.color }}><b class="nr-power-glyph" aria-hidden="true">{power.glyph}</b><div><h3>{power.name}<Show when={power.duration}><span>{power.duration}s base</span></Show></h3><p>{power.description}</p></div></article>}</For></div></details>
 			<details class="nr-guide nr-perks"><summary><span>Permanent upgrade archive<small>Draft one of three · your choices define the run</small></span><b aria-hidden="true">+</b></summary><div class="nr-codex-grid"><For each={Object.entries(UPGRADES)}>{([id, perk]) => <article class="nr-codex-card" style={{ '--power-color': perk.color }}><b class="nr-power-glyph" aria-hidden="true">{perk.glyph}</b><div><h3>{perk.name}<span>max ×{perk.maxStacks}</span></h3><p>{perk.description}</p></div></article>}</For></div></details>
 			<details class="nr-guide nr-map"><summary><span>The transmission route<small>{MODES[hud().mode].name} · {hud().stageTotal} stages · three guardians</small></span><b aria-hidden="true">+</b></summary><ol class="nr-sector-map"><For each={route()}>{(sector, i) => <li classList={{ 'is-cleared': i() + 1 < hud().stage || hud().phase === 'won', 'is-current': i() + 1 === hud().stage && hud().phase !== 'won' }} style={{ '--stage-color': LEVELS[sector - 1].color }}><span class="nr-map-number">{String(sector).padStart(2, '0')}</span><div><strong>{LEVELS[sector - 1].name}<Show when={sector % 4 === 0}><em>GUARDIAN</em></Show></strong><p>{LEVELS[sector - 1].subtitle}</p></div><span class="nr-map-status">{i() + 1 < hud().stage || hud().phase === 'won' ? '✓' : i() + 1 === hud().stage ? 'NOW' : '·'}</span></li>}</For></ol></details>
-			<details class="nr-guide nr-how"><summary><span>Flight manual &amp; scoring<small>A little technique goes a long way</small></span><b aria-hidden="true">+</b></summary><div class="nr-guide-content"><p id="nr-controls">Move your pointer or drag in the arena to steer. For keyboard play, focus the arena and use <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>. <kbd>Space</kbd> launches, releases a magnet-held ball, or pauses a rally; <kbd>P</kbd> pauses or resumes. Press <kbd>E</kbd> or the Nova Pulse button when the reactor reaches 100%. Buttons provide the same controls on touch screens.</p><p>The paddle edges create sharper rebounds. Consecutive brick hits before returning to the paddle build a chain multiplier up to ×8. Armor marks show remaining hits; orange star bricks explode into their neighbors. Moving bumpers deflect the ball. Catch a power capsule after every five destroyed bricks.</p><p>Guardians hold sectors 04, 08, and 12. Their targeting beam warns of a coming volley: move out of its path, catch a Safety Net, or fire your nova to erase hostile shots. Your nova also damages every surviving brick and the guardian. Clear both the brick pattern and the guardian to continue.</p><p>Campaign offers a permanent upgrade after every second sector through sector 10. Boss Rush takes you straight to the three guardians and offers an upgrade between encounters. Pick one of three cards; the arena stays frozen during the draft. Upgrades stack up to their listed maximum and reset on a new run.</p><p>Every third campaign sector cleared restores one life; Boss Rush restores a life between encounters. Lives cap at five. Keep at least one ball alive to avoid losing a life. Choose your ship and mode in the hangar; changes made during a run apply to the next run. Each mode saves its own best score in this browser.</p><p>Leaving the tab, window, or arena pauses a live run. Personal bests are saved on completion, restart, and leaving the game. Synth music starts only when enabled and follows your sound mute setting. Fullscreen opens the flight deck; Escape exits. Reduced motion or Effects off removes camera shake, star drift, trails, particles, and celebration effects.</p></div></details>
+			<details class="nr-guide nr-how"><summary><span>Flight manual &amp; scoring<small>A little technique goes a long way</small></span><b aria-hidden="true">+</b></summary><div class="nr-guide-content"><p id="nr-controls">Move your pointer or drag in the arena to steer. For keyboard play, focus the arena and use <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd>. <kbd>Space</kbd> launches, releases a magnet-held ball, or pauses a rally; <kbd>P</kbd> pauses or resumes. Press <kbd>E</kbd> or the Nova Pulse button when the reactor reaches 100%. Buttons provide the same controls on touch screens.</p><p>The paddle edges create sharper rebounds. Consecutive brick hits before returning to the paddle build a chain multiplier up to ×8. Armor marks show remaining hits; orange star bricks explode into their neighbors. Moving bumpers deflect the ball. Catch a power capsule after every five destroyed bricks.</p><p>Guardians hold sectors 04, 08, and 12. Their targeting beam warns of a coming volley: move out of its path, catch a Safety Net, or fire your nova to erase hostile shots. Your nova also damages every surviving brick and the guardian. Clear both the brick pattern and the guardian to continue.</p><p>Campaign offers a permanent upgrade after every second sector through sector 10. Boss Rush takes you straight to the three guardians and offers an upgrade between encounters. Pick one of three cards; the arena stays frozen during the draft. Upgrades stack up to their listed maximum and reset on a new run.</p><p>Every third campaign sector cleared restores one life; Boss Rush restores a life between encounters. Lives cap at five. Keep at least one ball alive to avoid losing a life. Choose your ship and mode in the hangar; changes made during a run apply to the next run. Each mode saves its own best score in this browser.</p><p>Leaving the tab, window, or arena pauses a live run. Personal bests are saved on completion, restart, and leaving the game. Synth music starts only when enabled and follows your sound mute setting. Fullscreen fills your screen, including browsers without native fullscreen support. Use Exit or Escape to leave. Slide on the steering pad to keep your finger below the arena. Play settings offers a larger, high contrast ball and visual effects controls; settings and screen resizing pause play. Reduced motion or Effects off removes camera shake, star drift, trails, particles, and celebration effects.</p></div></details>
 		</div>
 	</section>;
 }
